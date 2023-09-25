@@ -1,0 +1,98 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <Version>1.0</Version>
+        <Title>TwinLand</Title>
+        <Description>Description of TwinLand</Description>
+        <TargetExt>.gha</TargetExt>
+        <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+        <NuGetPackageImportStamp>
+        </NuGetPackageImportStamp>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <PlatformTarget>AnyCPU</PlatformTarget>
+      <OutputPath>D:\Application Development\grasshopper development\TwinLand\bin\Test</OutputPath>
+      <DebugType>full</DebugType>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <PlatformTarget>AnyCPU</PlatformTarget>
+      <OutputPath>bin/Release/</OutputPath>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <DebugType>pdbonly</DebugType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="GDAL" Version="2.4.4" />
+        <PackageReference Include="GDAL.Native" Version="2.4.4" />
+        <PackageReference Include="GDAL.Plugins" Version="2.4.4" />
+        <PackageReference Include="Grasshopper" Version="7.32.23215.19001" />
+        <PackageReference Include="Microsoft.NETCore.Runtime" Version="1.0.2-rc2-24027" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="OsmSharp" Version="7.0.0-pre022" />
+        <PackageReference Include="RhinoCommon" Version="7.32.23215.19001" />
+        <PackageReference Include="System.Drawing.Common" Version="8.0.0-preview.7.23375.5" />
+        <PackageReference Include="System.Resources.Extensions" Version="8.0.0-preview.7.23375.6" />
+        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+        <PackageReference Include="Unofficial.laszip.net" Version="2.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Properties\Resources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <None Remove="Resources\TwinLandServiceEndpoints.json" />
+      <EmbeddedResource Include="Resources\TwinLandServiceEndpoints.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Properties\Resources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Resources.resx</DependentUpon>
+      </Compile>
+      <Compile Update="GdalConfiguration.cs">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Resouces\T_icon.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="FlexCLI">
+        <HintPath>..\dll\FlexCLI.dll</HintPath>
+      </Reference>
+      <Reference Include="gdalconst_csharp">
+        <HintPath>..\..\..\..\..\..nuget\packages\gdal\2.4.4\lib\net40\gdalconst_csharp.dll</HintPath>
+      </Reference>
+      <Reference Include="gdal_csharp">
+        <HintPath>..\..\..\..\..\.nuget\packages\gdal\2.4.4\lib\net40\gdal_csharp.dll</HintPath>
+      </Reference>
+      <Reference Include="ogr_csharp">
+        <HintPath>..\..\..\..\..\.nuget\packages\gdal\2.4.4\lib\net40\ogr_csharp.dll</HintPath>
+      </Reference>
+      <Reference Include="osr_csharp">
+        <HintPath>..\..\..\..\..\.nuget\packages\gdal\2.4.4\lib\net40\osr_csharp.dll</HintPath>
+      </Reference>
+      <Reference Include="System.Windows.Forms">
+        <HintPath>..\..\..\..\..\.nuget\packages\microsoft.netframework.referenceassemblies.net48\1.0.3\build\.NETFramework\v4.8\System.Windows.Forms.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Components\Export\" />
+    </ItemGroup>
+    
+    
+    
+</Project>

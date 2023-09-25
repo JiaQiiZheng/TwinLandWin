@@ -1,0 +1,17 @@
+D:\Application Development\grasshopper development\TwinLand\bin\Resources\TwinLandServiceEndpoints.json
+D:\Application Development\grasshopper development\TwinLand\bin\TwinLand.gha
+D:\Application Development\grasshopper development\TwinLand\bin\TwinLand.pdb
+D:\Application Development\grasshopper development\TwinLand\bin\Debug\TwinLand.gha
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\NuGet\FE48B560D6B68B6664366B6FABB44A7E669E5B11\GDAL\3.7.1\GdalConfiguration.cs
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.csproj.AssemblyReference.cache
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.Properties.Resources.resources
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.csproj.GenerateResource.cache
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.GeneratedMSBuildEditorConfig.editorconfig
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.AssemblyInfoInputs.cache
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.AssemblyInfo.cs
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.csproj.CoreCompileInputs.cache
+D:\Application Development\grasshopper development\TwinLand\bin\Debug\Resources\TwinLandServiceEndpoints.json
+D:\Application Development\grasshopper development\TwinLand\bin\Debug\TwinLand.pdb
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.csproj.CopyComplete
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.gha
+D:\Application Development\grasshopper development\TwinLand\TwinLand\obj\Debug\TwinLand.pdb
