@@ -32,7 +32,13 @@ namespace TwinLand
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-           
+            pManager.AddNumberParameter("Duration Time", "Duration Time", "", GH_ParamAccess.item, defaultDt);
+            pManager.AddIntegerParameter("Sub Steps", "Sub Steps", "", GH_ParamAccess.item, 3);
+            pManager.AddIntegerParameter("Iteration", "Iteration", "", GH_ParamAccess.item, 3);
+            pManager.AddIntegerParameter("Scene Mode", "Scene Mode", "", GH_ParamAccess.item, 0);
+            pManager.AddIntegerParameter("FixedNum Total Iterations", "FixedNum Total Iterations", "", GH_ParamAccess.item, -1);
+            pManager.AddIntegerParameter("Memory Requirements", "Memoery Requirements", "", GH_ParamAccess.list, defaultMemoryRequirements);
+            pManager.AddNumberParameter("Stability Scaling Factor", "Stability Scaling Factor", "", GH_ParamAccess.item, 1);
         }
 
 
@@ -41,8 +47,14 @@ namespace TwinLand
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-           
+            pManager.AddGenericParameter("Options", "options", "", GH_ParamAccess.item);
         }
+
+        /// <summary>
+        /// static values
+        /// </summary>
+        float defaultDt = (float)1 / (float)60;
+        List<int> defaultMemoryRequirements = new List<int> { 131072, 96, 65536, 65536, 65536, 65536, 65536, 196608, 131972 };
 
         /// <summary>
         /// This is the method that actually does the work.
@@ -51,7 +63,34 @@ namespace TwinLand
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-           
+            float dt = defaultDt;
+            int subSteps = 3;
+            int numIterations = 3;
+            int sceneMode = 0;
+            int fixedNumTotalIterations = -1;
+            List<int> memoryRequirements = new List<int>();
+            float stabilityScalingFactor = 1;
+
+            DA.GetData("Duration Time", ref dt);
+            DA.GetData("Sub Steps", ref subSteps);
+            DA.GetData("Iteration", ref numIterations);
+            DA.GetData("Scene Mode", ref sceneMode);
+            DA.GetData("FixedNum Total Iterations", ref fixedNumTotalIterations);
+            DA.GetDataList("Memory Requirements", memoryRequirements);
+            DA.GetData("Stability Scaling Factor", ref stabilityScalingFactor);
+
+            if (dt == 0 || stabilityScalingFactor == 0)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Duration Time or Stability Scaling Factor might invalid");
+            }
+
+            if (memoryRequirements.Count == 0 || memoryRequirements.Count != 9)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Memory Requirement list is invalid, default list was used");
+                memoryRequirements = defaultMemoryRequirements;
+            }
+
+            DA.SetData("Options", new FlexSolverOptions(dt, subSteps, numIterations, sceneMode, fixedNumTotalIterations, memoryRequirements.ToArray(), (float)Math.Max(stabilityScalingFactor, 0001)));
         }
 
         /// <summary>
