@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Application Development\\grasshopper development\\TwinLand\\TwinLand\\TwinLand.csproj": {}
+    "D:\\Application Development\\grasshopper development\\TwinLand_win\\TwinLand\\TwinLand.csproj": {}
   },
   "projects": {
-    "D:\\Application Development\\grasshopper development\\TwinLand\\TwinLand\\TwinLand.csproj": {
+    "D:\\Application Development\\grasshopper development\\TwinLand_win\\TwinLand\\TwinLand.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Application Development\\grasshopper development\\TwinLand\\TwinLand\\TwinLand.csproj",
+        "projectUniqueName": "D:\\Application Development\\grasshopper development\\TwinLand_win\\TwinLand\\TwinLand.csproj",
         "projectName": "TwinLand",
-        "projectPath": "D:\\Application Development\\grasshopper development\\TwinLand\\TwinLand\\TwinLand.csproj",
+        "projectPath": "D:\\Application Development\\grasshopper development\\TwinLand_win\\TwinLand\\TwinLand.csproj",
         "packagesPath": "C:\\Users\\carle\\.nuget\\packages\\",
-        "outputPath": "D:\\Application Development\\grasshopper development\\TwinLand\\TwinLand\\obj\\",
+        "outputPath": "D:\\Application Development\\grasshopper development\\TwinLand_win\\TwinLand\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\carle\\AppData\\Roaming\\NuGet\\NuGet.Config",
