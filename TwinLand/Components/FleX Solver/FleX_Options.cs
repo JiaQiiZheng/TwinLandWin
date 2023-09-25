@@ -32,64 +32,16 @@ namespace TwinLand
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("Parameters", "Parameters", "", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Collider", "Collider", "", GH_ParamAccess.item);
-            pManager.AddGenericParameter("Force Fields", "Force Fields", "", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Scenes", "Scenes", "", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Constraint", "Constraint", "", GH_ParamAccess.list);
-            pManager.AddGenericParameter("Solver Options", "Solver Options", "", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("Reset", "Reset", "", GH_ParamAccess.item, false);
-            pManager.AddBooleanParameter("Run", "Run", "", GH_ParamAccess.item, false);
-
-            for (int i = 0; i < pManager.ParamCount; i++)
-            {
-                pManager[i].Optional = true;
-                if (i == 3 || i == 4)
-                {
-                    pManager[i].DataMapping = GH_DataMapping.Flatten;
-                }
-            }
+           
         }
 
-        /// <summary>
-        /// initialize time related values
-        /// </summary>
-        Flex flex = new Flex();
-        int counter = 0;
-        Stopwatch sw_1 = new Stopwatch();
-        Stopwatch sw_2 = new Stopwatch();
-        long totalTime_ms = 0;
-        long totalUpdateTime_ms = 0;
-        List<string> log = new List<string>();
-
-        // time stamps
-        int options_ts = 0;
-        int params_ts = 0;
-        List<int> scene_tss = new List<int>();
-        List<int> constraint_tss = new List<int>();
-        List<int> forceField_tss = new List<int>();
-        int collider_ts = 0;
-
-        Task<int> updateTask;
-
-        /// <summary>
-        /// static method
-        /// </summary>
-        /// <returns></returns>
-        private int Update()
-        {
-            sw_2.Restart();
-            flex.UpdateSolver();
-            return (int)sw_2.ElapsedMilliseconds;
-        }
 
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("FleX", "FleX", "", GH_ParamAccess.item);
-            pManager.AddGenericParameter("FleX_Log", "FleX_Log", "", GH_ParamAccess.list);
+           
         }
 
         /// <summary>
@@ -99,11 +51,7 @@ namespace TwinLand
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            updateTask = new Task<int>(() => Update());
-
-            FlexParams param = new FlexParams();
-            FlexCollisionGeometry collisonGeometry = new FlexCollisionGeometry();
-            List<FlexForceField> forceField = new List<FlexForceField>();
+           
         }
 
         /// <summary>
