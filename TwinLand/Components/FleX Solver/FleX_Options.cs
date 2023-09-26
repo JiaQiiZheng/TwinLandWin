@@ -38,7 +38,7 @@ namespace TwinLand
             pManager.AddIntegerParameter("Scene Mode", "Scene Mode", "", GH_ParamAccess.item, 0);
             pManager.AddIntegerParameter("FixedNum Total Iterations", "FixedNum Total Iterations", "", GH_ParamAccess.item, -1);
             pManager.AddIntegerParameter("Memory Requirements", "Memoery Requirements", "", GH_ParamAccess.list, defaultMemoryRequirements);
-            pManager.AddNumberParameter("Stability Scaling Factor", "Stability Scaling Factor", "", GH_ParamAccess.item, 1);
+            pManager.AddNumberParameter("Stability Scaling Factor", "Stability Scaling Factor", "", GH_ParamAccess.item, 1.0);
         }
 
 
@@ -53,7 +53,7 @@ namespace TwinLand
         /// <summary>
         /// static values
         /// </summary>
-        float defaultDt = (float)1 / (float)60;
+        double defaultDt = 1.0 / 6.0;
         List<int> defaultMemoryRequirements = new List<int> { 131072, 96, 65536, 65536, 65536, 65536, 65536, 196608, 131972 };
 
         /// <summary>
@@ -63,13 +63,14 @@ namespace TwinLand
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            float dt = defaultDt;
+            double dt = defaultDt;
             int subSteps = 3;
             int numIterations = 3;
             int sceneMode = 0;
             int fixedNumTotalIterations = -1;
             List<int> memoryRequirements = new List<int>();
-            float stabilityScalingFactor = 1;
+            double stabilityScalingFactor = 1.0;
+            
 
             DA.GetData("Duration Time", ref dt);
             DA.GetData("Sub Steps", ref subSteps);
@@ -90,7 +91,7 @@ namespace TwinLand
                 memoryRequirements = defaultMemoryRequirements;
             }
 
-            DA.SetData("Options", new FlexSolverOptions(dt, subSteps, numIterations, sceneMode, fixedNumTotalIterations, memoryRequirements.ToArray(), (float)Math.Max(stabilityScalingFactor, 0001)));
+            DA.SetData("Options", new FlexSolverOptions((float)dt, subSteps, numIterations, sceneMode, fixedNumTotalIterations, memoryRequirements.ToArray(), (float)Math.Max(stabilityScalingFactor, 0.0001)));
         }
 
         /// <summary>

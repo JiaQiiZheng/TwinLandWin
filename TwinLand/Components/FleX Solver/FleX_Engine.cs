@@ -79,7 +79,7 @@ namespace TwinLand
         List<int> forceField_tss = new List<int>();
         int collider_ts = 0;
 
-        Task<int> updateTask;
+        Task<int> UpdateTask;
 
         /// <summary>
         /// static method
@@ -99,7 +99,7 @@ namespace TwinLand
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            updateTask = new Task<int>(() => Update());
+            UpdateTask = new Task<int>(() => Update());
 
             FlexParams param = new FlexParams();
             FlexCollisionGeometry collisionGeometry = new FlexCollisionGeometry();
@@ -129,7 +129,7 @@ namespace TwinLand
                 DA.GetData("Parameters", ref param);
                 DA.GetData("Colliders", ref collisionGeometry);
                 DA.GetDataList("Force Fields", forceFields);
-                DA.GetDataList("Scene", scenes);
+                DA.GetDataList("Scenes", scenes);
                 DA.GetDataList("Constraints", constraints);
                 DA.GetData("Solver Options", ref options);
 
@@ -271,8 +271,46 @@ namespace TwinLand
                         }
                     }
                 }
+
+                // logging
+                log = new List<string>();
+                counter++;
+                log.Add(counter.ToString());
+                long timer_ms = sw_1.ElapsedMilliseconds;
+                sw_1.Restart();
+                totalTime_ms += timer_ms;
+                log.Add(totalTime_ms.ToString());
+                log.Add(timer_ms.ToString());
+                float average = (float)totalTime_ms / (float)counter;
+                log.Add(average.ToString());
+
+                // start update
+                UpdateTask.Start();
+
+                // add solver timing info to log
+                int timerSolver = UpdateTask.Result;
+                totalTime_ms += timerSolver;
+                float ratUpdateTime = (float)totalUpdateTime_ms / (float)counter;
+                log.Add(timerSolver.ToString());
+                log.Add(ratUpdateTime.ToString());
             }
+
+            if (run && options.FixedTotalIterations < 1)
+            {
+                ExpireSolution(true);
+            }
+            else if (flex != null && UpdateTask.Status == TaskStatus.Running)
+            {
+                UpdateTask.Dispose();
+            }
+            if (flex != null)
+            {
+                DA.SetData("FleX", flex);
+            }
+            DA.SetDataList("FleX_Log", log);
         }
+        
+        
 
         /// <summary>
         /// Provides an Icon for every component that will be visible in the User Interface.

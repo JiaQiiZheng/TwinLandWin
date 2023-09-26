@@ -15,3 +15,17 @@
 /Volumes/SARC-CLASSES/LAR7993-Cantrell-FAL2023/bin/net48/net48/Resources/TwinLandServiceEndpoints.json
 /Volumes/SARC-CLASSES/LAR7993-Cantrell-FAL2023/bin/net48/net48/TwinLand.gha
 /Volumes/SARC-CLASSES/LAR7993-Cantrell-FAL2023/bin/net48/net48/TwinLand.pdb
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.csproj.AssemblyReference.cache
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.Properties.Resources.resources
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.csproj.GenerateResource.cache
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.GeneratedMSBuildEditorConfig.editorconfig
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.AssemblyInfoInputs.cache
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.AssemblyInfo.cs
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.csproj.CoreCompileInputs.cache
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.gha
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.pdb
+D:\Application Development\grasshopper development\TwinLand\bin\Test\net48\Resources\TwinLandServiceEndpoints.json
+D:\Application Development\grasshopper development\TwinLand\bin\Test\net48\TwinLand.gha
+D:\Application Development\grasshopper development\TwinLand\bin\Test\net48\TwinLand.pdb
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\NuGet\95A50E8D5928C340BBBF1F7C4B24EA14FB7E3450\GDAL\3.7.1\GdalConfiguration.cs
+D:\Application Development\grasshopper development\TwinLand_win\TwinLand\obj\Debug\net48\TwinLand.csproj.CopyComplete

@@ -107,11 +107,11 @@ namespace TwinLand
 
             foreach (Mesh m in meshes)
             {
-                if(!m.IsValid) AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid mesh found.");
+                if (!m.IsValid) AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid mesh found.");
                 else
                 {
                     // FleX needs face pointing inward
-                    m.Flip(false, false,true);
+                    m.Flip(false, false, true);
 
                     float[] vertices = new float[m.Vertices.Count * 3];
                     int[] faces = new int[m.Faces.Count * 3];
@@ -129,15 +129,15 @@ namespace TwinLand
                         faces[3 * i + 1] = m.Faces[i].B;
                         faces[3 * i + 2] = m.Faces[i].C;
                     }
-                    
+
                     // register meshes
                     cg.AddMesh(vertices, faces);
 
                     if (!m.IsClosed)
                     {
                         Mesh mm = m.DuplicateMesh();
-                        mm.Flip(true,true,true);
-                        
+                        mm.Flip(true, true, true);
+
                         vertices = new float[mm.Vertices.Count * 3];
                         faces = new int[mm.Faces.Count * 3];
 
@@ -154,12 +154,14 @@ namespace TwinLand
                             faces[3 * i + 1] = mm.Faces[i].B;
                             faces[3 * i + 2] = mm.Faces[i].C;
                         }
-                        
+
                         // register meshes
                         cg.AddMesh(vertices, faces);
                     }
                 }
             }
+
+            DA.SetData("FleX Colliders", cg);
         }
 
         /// <summary>
