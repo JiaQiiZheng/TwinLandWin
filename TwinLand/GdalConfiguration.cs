@@ -27,11 +27,10 @@
  * DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
 
+using TwinLand;
 using System;
 using System.IO;
 using System.Reflection;
-using OsmSharp.Complete;
-using TwinLand;
 using Gdal = OSGeo.GDAL.Gdal;
 using Ogr = OSGeo.OGR.Ogr;
 
@@ -39,8 +38,8 @@ namespace RESTful
 {
     public static partial class GdalConfiguration
     {
-        private static volatile bool _configuredOgr;
-        private static volatile bool _configuredGdal;
+        private static bool _configuredOgr;
+        private static bool _configuredGdal;
 
         /// <summary>
         /// Function to determine which platform we're on
@@ -67,18 +66,18 @@ namespace RESTful
 
             // Prepend native path to environment path, to ensure the
             // right libs are being used.
-            var path = Environment.GetEnvironmentVariable("PATH");
+            var path = Environment.GetEnvironmentVariable("Path");
             path = nativePath + ";" + Path.Combine(nativePath, "plugins") + ";" + path;
-            Environment.SetEnvironmentVariable("PATH", path);
+            Environment.SetEnvironmentVariable("Path", path);
 
             // Set the additional GDAL environment variables.
             var gdalData = Path.Combine(gdalPath, "data");
             Environment.SetEnvironmentVariable("GDAL_DATA", gdalData);
             Gdal.SetConfigOption("GDAL_DATA", gdalData);
 
-            // var driverPath = Path.Combine(nativePath, "plugins");
-            // Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", driverPath);
-            // Gdal.SetConfigOption("GDAL_DRIVER_PATH", driverPath);
+            var driverPath = Path.Combine(nativePath, "plugins");
+            Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", driverPath);
+            Gdal.SetConfigOption("GDAL_DRIVER_PATH", driverPath);
 
             Environment.SetEnvironmentVariable("GEOTIFF_CSV", gdalData);
             Gdal.SetConfigOption("GEOTIFF_CSV", gdalData);
@@ -86,6 +85,8 @@ namespace RESTful
             var projSharePath = Path.Combine(gdalPath, "share");
             Environment.SetEnvironmentVariable("PROJ_LIB", projSharePath);
             Gdal.SetConfigOption("PROJ_LIB", projSharePath);
+
+            OSGeo.GDAL.Gdal.SetConfigOption("GDAL_HTTP_UNSAFESSL", "YES");
         }
 
         /// <summary>
@@ -99,6 +100,7 @@ namespace RESTful
             // Register drivers
             Ogr.RegisterAll();
             _configuredOgr = true;
+
             PrintDriversOgr();
         }
 
