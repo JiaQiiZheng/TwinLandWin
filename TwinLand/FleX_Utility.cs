@@ -27,4 +27,17 @@ namespace TwinLand
 
         public int TimeStamp;
     }
+
+    public class ConvertParams
+    {
+        private List<int> GetMemoryRequirementsByPowers(List<int> mr_powers)
+        {
+            List<int> memoeryRequirements = new List<int>();
+            foreach (int power in memoeryRequirements)
+            {
+                memoeryRequirements.Add((int)Math.Pow(2, power));
+            }
+            return memoeryRequirements;
+        }
+    }
 }

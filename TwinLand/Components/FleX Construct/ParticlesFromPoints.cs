@@ -77,6 +77,70 @@ namespace TwinLand
             DA.GetDataTree("Is Fluid", out isFluidTree);
             DA.GetDataTree("GroupIndex", out groupIndexTree);
 
+            #region clean up tree
+            if (!pointsTree.IsEmpty)
+            {
+                pointsTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
+            }
+            if (!velocityTree.IsEmpty)
+            {
+                velocityTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
+            }
+            if (!massTree.IsEmpty)
+            {
+                massTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
+            }
+            if (!selfCollisionTree.IsEmpty)
+            {
+                selfCollisionTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
+            }
+            if (!isFluidTree.IsEmpty)
+            {
+                isFluidTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
+            }
+            if (!groupIndexTree.IsEmpty)
+            {
+                groupIndexTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
+            }
+
+            if (pointsTree.Branches.Count == 1)
+            {
+                GH_Structure<GH_Point> pT = new GH_Structure<GH_Point> ();
+                pT.AppendRange(pointsTree.Branches[0], new GH_Path(0));
+                pointsTree = pT;
+            }
+            if (velocityTree.Branches.Count == 1)
+            {
+                GH_Structure<GH_Vector> vT = new GH_Structure<GH_Vector>();
+                vT.AppendRange(velocityTree.Branches[0], new GH_Path(0));
+                velocityTree = vT;
+            }
+            if (massTree.Branches.Count == 1)
+            {
+                GH_Structure<GH_Number> mT = new GH_Structure<GH_Number>();
+                mT.AppendRange(massTree.Branches[0], new GH_Path(0));
+                massTree = mT;
+            }
+            if (selfCollisionTree.Branches.Count == 1)
+            {
+                GH_Structure<GH_Boolean> sT = new GH_Structure<GH_Boolean>();
+                sT.AppendRange(selfCollisionTree.Branches[0], new GH_Path(0));
+                selfCollisionTree = sT;
+            }
+            if (isFluidTree.Branches.Count == 1)
+            {
+                GH_Structure<GH_Boolean> fT = new GH_Structure<GH_Boolean>();
+                fT.AppendRange(isFluidTree.Branches[0], new GH_Path(0));
+                isFluidTree = fT;
+            }
+            if (groupIndexTree.Branches.Count == 1)
+            {
+                GH_Structure<GH_Integer> gT = new GH_Structure<GH_Integer>();
+                gT.AppendRange(groupIndexTree.Branches[0], new GH_Path(0));
+                groupIndexTree = gT;
+            }
+            #endregion
+
             List<FlexParticle> particles = new List<FlexParticle>();
 
             // loop through input points tree

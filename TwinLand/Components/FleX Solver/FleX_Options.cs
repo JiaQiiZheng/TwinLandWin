@@ -54,7 +54,9 @@ namespace TwinLand
         /// static values
         /// </summary>
         double defaultDt = 1.0 / 6.0;
+        List<int> memoeryRequirements_powers = new List<int> { 17, 7, 16, 16, 16, 16, 16, 18, 17 };
         List<int> defaultMemoryRequirements = new List<int> { 131072, 96, 65536, 65536, 65536, 65536, 65536, 196608, 131972 };
+        
 
         /// <summary>
         /// This is the method that actually does the work.
