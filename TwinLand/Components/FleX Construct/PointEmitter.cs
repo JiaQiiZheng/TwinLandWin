@@ -113,9 +113,6 @@ namespace TwinLand.Components.FleX_Construct
                     foreach (double y in param_y)
                     {
                         pts.Add(new Point3d(plane.PointAt(x * radius, y * radius)));
-
-                        Point3d testPt = new Point3d(plane.PointAt(x * radius, y * radius));
-                        Debug.WriteLine(testPt);
                     }
                 }
 
