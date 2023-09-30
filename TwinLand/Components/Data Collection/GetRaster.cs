@@ -40,7 +40,7 @@ namespace TwinLand
     public class GetRaster : TwinLandRasterPreviewComponent
     {
         //Class Constructor
-        public GetRaster() : base("GetRaster", "GetRaster", "Get raster imagery from ArcGIS REST Services", "Data Collection")
+        public GetRaster() : base("Get Raster", "Get Raster", "Get raster imagery from ArcGIS REST Services", "Data Collection")
         {
 
         }

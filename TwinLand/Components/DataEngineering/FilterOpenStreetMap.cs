@@ -21,7 +21,7 @@ namespace TwinLand
     /// new tabs/panels will automatically be created.
     /// </summary>
     public FilterOpenStreetMap()
-      : base("FilterOpenStreetMap", "FilterOSM",
+      : base("Filter OpenStreetMap", "Filter OSM",
         "Filter OpenStreetMap by input 'Key=Value' expression", "Data Engineering")
     {
     }

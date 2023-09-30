@@ -44,7 +44,7 @@ namespace TwinLand
     /// new tabs/panels will automatically be created.
     /// </summary>
     public GetRasterTiles()
-      : base("GetRasterTiles", "GetRasterTiles",
+      : base("Get Raster Tiles", "Get Raster Tiles",
         "Get raster tiles from API services", "Data Collection")
     {
     }

@@ -23,7 +23,7 @@ namespace TwinLand
     /// new tabs/panels will automatically be created.
     /// </summary>
     public GetOpenStreetMap()
-      : base("GetOpenStreetMap", "GetOSM",
+      : base("Get OpenStreetMap", "GetOSM",
         "Get OSM file from OpenStreetMap Overpass API ", "Data Collection")
     {
     }

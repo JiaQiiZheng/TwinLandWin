@@ -18,7 +18,7 @@ namespace TwinLand
     /// </summary>
     public PointToDecimalDegrees()
       : base("PointToDecimalDegrees", "XYZ_DD",
-        "Convert point3d in model space to decimal degrees based on Spatial Reference System in model space", "GIS")
+        "Convert point3d in model space to decimal degrees based on Spatial Reference System in model space.", "GIS")
     {
     }
 
