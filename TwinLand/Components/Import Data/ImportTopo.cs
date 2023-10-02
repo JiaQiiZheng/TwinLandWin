@@ -39,8 +39,8 @@ namespace TwinLand
         /// new tabs/panels will automatically be created.
         /// </summary>
         public ImportTopo()
-            : base("ImportTopo", "Nickname",
-                "ImportTopo description", "Import")
+            : base("Import Topography (DEM)", "import DEM",
+                "Import DEM file and generate DEM mesh", "Import")
         {
         }
 
