@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -166,8 +167,10 @@ namespace TwinLand
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "Parameter XML files (*.xml)|*.xml";
             saveFileDialog.InitialDirectory = ".";
+
+            DialogResult res = saveFileDialog.ShowDialog();
             
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            if (res == DialogResult.OK)
             {
                 try
                 {
@@ -212,6 +215,8 @@ namespace TwinLand
                     paramString.Add($"<{nameof(paramObj.WindZ)}>{paramObj.WindZ}</{nameof(paramObj.WindZ)}>");
                     //paramString.Add($"<{nameof()}>{}</{nameof()}>"); 
                     #endregion
+
+                    paramString.Add("</paramObj>");
 
 
                     System.IO.Stream stream = System.IO.File.Open(saveFileDialog.FileName, System.IO.FileMode.Create);

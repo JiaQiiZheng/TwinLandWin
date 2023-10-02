@@ -57,7 +57,10 @@ namespace TwinLand.Components.FleX_Construct
             BoundingBox bbox = BoundingBox.Empty;
             foreach (Mesh mesh in meshes)
             {
-                bbox.Union(mesh.GetBoundingBox(true));
+                if (mesh != null)
+                {
+                    bbox.Union(mesh.GetBoundingBox(true));
+                }
             }
 
             // calculate box domain

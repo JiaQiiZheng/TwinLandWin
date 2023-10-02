@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
@@ -86,7 +87,9 @@ namespace TwinLand.Components.FleX_Configuration
 
             if (!isDefaultFile)
             {
+
                 DA.GetData("File Path", ref path);
+
             }
             else
             {
@@ -108,6 +111,8 @@ namespace TwinLand.Components.FleX_Configuration
                 root = this.OnPingDocument().FilePath;
                 path = root.Substring(0, root.LastIndexOf(@"\") + 1) + path;
             }
+
+            Debug.WriteLine(path);
             doc.Load(path);
 
             foreach (XmlNode node in doc.DocumentElement.ChildNodes)
@@ -263,7 +268,7 @@ namespace TwinLand.Components.FleX_Configuration
                     param.WindZ = float.Parse(node.InnerText);
 
                 else
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Param couldn't be identified: " + node.Name); 
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Param couldn't be identified: " + node.Name);
                 #endregion
             }
 

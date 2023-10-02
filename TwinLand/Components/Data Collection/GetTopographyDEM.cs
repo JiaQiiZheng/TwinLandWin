@@ -190,8 +190,8 @@ namespace TwinLand
         /// Dynamic Variables
         /// </summary>
         private string sourceList_DEM = TwinLand.Convert.GetEndpoints();
-        private string source_DEM = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString();
-        private string dem_url = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["url"].ToString();
+        private string source_DEM = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][2]["service"].ToString();
+        private string dem_url = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][2]["url"].ToString();
 
         public string SourceList_DEM
         {

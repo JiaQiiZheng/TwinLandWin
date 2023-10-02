@@ -58,7 +58,10 @@ namespace TwinLand.Components.FleX_Construct
             BoundingBox bbox = BoundingBox.Empty;
             foreach (Brep brep in breps)
             {
-                bbox.Union(brep.GetBoundingBox(true));
+                if (brep != null)
+                {
+                    bbox.Union(brep.GetBoundingBox(true));
+                }
             }
 
             // calculate box domain
