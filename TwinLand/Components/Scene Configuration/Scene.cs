@@ -29,7 +29,7 @@ namespace TwinLand
         {
             pManager.AddGenericParameter("Particles", "particles", "", GH_ParamAccess.list);
             // TODO. Add more types of 
-            pManager.AddGenericParameter("Supplement Constraints", "constraints",
+            pManager.AddGenericParameter("Custom Constraints", "constraints",
               "This is a optional supplement previous constraints", GH_ParamAccess.list);
 
             for (int i = 0; i < pManager.ParamCount; i++)
@@ -57,12 +57,20 @@ namespace TwinLand
             FlexScene scene = new FlexScene();
 
             List<FlexParticle> particles = new List<FlexParticle>();
+            List<ConstraintSystem> constraints = new List<ConstraintSystem>();
+
             DA.GetDataList("Particles", particles);
+            DA.GetDataList("Custom Constraints", constraints);
 
             // register input for FLeX engine
             foreach (FlexParticle p in particles)
             {
                 scene.RegisterParticles(new float[3] { p.PositionX, p.PositionY, p.PositionZ }, new float[3] { p.VelocityX, p.VelocityY, p.VelocityZ }, new float[1] { p.InverseMass }, p.IsFluid, p.SelfCollision, p.GroupIndex);
+            }
+
+            foreach (ConstraintSystem c in constraints)
+            {
+                scene.RegisterCustomConstraints(c.AnchorIndices, c.ShapeMatchingIndices, c.ShapeStiffness, c.SpringPairIndies, c.SpringStiffness, c.SpringTargetLengths, c.TriangleIndices, c.TriangleNormals);
             }
 
             DA.SetData("Scene", scene);
