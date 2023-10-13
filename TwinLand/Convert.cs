@@ -420,12 +420,12 @@ namespace TwinLand
         {
             string jsonString = string.Empty;
 
-            // get from github
-            using (System.Net.WebClient wc = new System.Net.WebClient())
-            {
-                string URI = "https://raw.githubusercontent.com/JiaQiiZheng/TwinLand/main/TwinLand/Resources/TwinLandServiceEndpoints.json";
-                jsonString = wc.DownloadString(URI);
-            }
+            //// get from github
+            //using (System.Net.WebClient wc = new System.Net.WebClient())
+            //{
+            //    string URI = "https://raw.githubusercontent.com/JiaQiiZheng/TwinLand/main/TwinLand/Resources/TwinLandServiceEndpoints.json";
+            //    jsonString = wc.DownloadString(URI);
+            //}
             
             // get from local resources
             if (string.IsNullOrEmpty(jsonString))

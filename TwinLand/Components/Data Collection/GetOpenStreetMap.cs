@@ -5,12 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Windows.Forms;
+using System.Drawing;
 
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Special;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using Rhino.Geometry;
 
 namespace TwinLand
@@ -187,11 +190,6 @@ namespace TwinLand
             return serviceString.Equals(osmSource);
         }
 
-        private bool IsKeySelected(string keyString)
-        {
-            return keyString.Equals(osmKey);
-        }
-
         protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
             if (osmSourceList == "")
@@ -218,17 +216,63 @@ namespace TwinLand
             menu.Items.Add(root);
 
             // create OSM Key table
-            var osmKeyJson = osmJson["OSM Features Key"];
-            Debug.WriteLine(osmKeyJson);
+            ToolStripMenuItem aerialway = GH_DocumentObject.Menu_AppendItem(menu, "Create OSM Feature Table : key=aerialway", CreateFeatureTable);
+            ToolStripMenuItem natural = GH_DocumentObject.Menu_AppendItem(menu, "Create OSM Feature Table : key=natural", CreateFeatureTable);
+            ToolStripMenuItem highway = GH_DocumentObject.Menu_AppendItem(menu, "Create OSM Feature Table : key=highway", CreateFeatureTable);
+
+            menu.Items.Add(natural);
+            menu.Items.Add(highway);
 
             base.AppendAdditionalComponentMenuItems(menu);
         }
 
         private void CreateFeatureTable(object sender, System.EventArgs eventArgs)
         {
-            string feature = sender.ToString().Split(' ')[1];
+            GH_DocumentIO docIO = new GH_DocumentIO();
+            docIO.Document = new GH_Document();
 
-            Debug.WriteLine(feature);
+            GH_ValueList vl = new GH_ValueList();
+            vl.ListMode = GH_ValueListMode.CheckList;
+
+            vl.ListItems.Clear();
+
+            var featureJson = JObject.Parse(osmSourceList)["OSM Feature"];
+            string key = sender.ToString().Split('=')[1];
+
+            foreach (var item in featureJson)
+            {
+                if (item["key"].ToString() == key)
+                {
+                    foreach (var value in item["values"])
+                    {
+                        GH_ValueListItem vi = new GH_ValueListItem($"{item["key"]} : {value}", String.Format("\"{0}\"", item["key"].ToString() + "=" + value));
+                        vl.ListItems.Add(vi);
+                    }
+                }
+            }
+
+            vl.NickName = $"OSM Feature Table : key={key}";
+
+            ///Get active GH doc
+            GH_Document doc = OnPingDocument();
+            if (docIO.Document == null) return;
+
+            ///Place the object
+            docIO.Document.AddObject(vl, false, 1);
+
+            ///Get the pivot of the "serviceURL" param
+            PointF currPivot = Params.Input[4].Attributes.Pivot;
+
+            ///Set the pivot of the new object
+            vl.Attributes.Pivot = new PointF(currPivot.X - 400, currPivot.Y - 11);
+
+            docIO.Document.SelectAll();
+            docIO.Document.ExpireSolution();
+            docIO.Document.MutateAllIds();
+            IEnumerable<IGH_DocumentObject> objs = docIO.Document.Objects;
+            doc.DeselectAll();
+            doc.UndoUtil.RecordAddObjectEvent("Create REST Raster Source List", objs);
+            doc.MergeDocument(docIO.Document);
         }
 
         private void ServiceItemOnClick(object sender, EventArgs e)
@@ -255,7 +299,6 @@ namespace TwinLand
         private string osmSourceList = TwinLand.Convert.GetEndpoints();
         private string osmSource = JObject.Parse(TwinLand.Convert.GetEndpoints())["OSM Vector"][0]["service"].ToString();
         private string osmURL = JObject.Parse(TwinLand.Convert.GetEndpoints())["OSM Vector"][0]["url"].ToString();
-        private string osmKey = JObject.Parse(TwinLand.Convert.GetEndpoints())["OSM Feature Key"][0]["value"].ToString();
 
         public string SlippySourceList
         {
