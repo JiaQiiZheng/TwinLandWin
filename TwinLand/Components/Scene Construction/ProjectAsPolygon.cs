@@ -33,7 +33,6 @@ namespace TwinLand.Components.Scene_Construction
         {
             pManager.AddGeometryParameter("OSM Features", "osm features", "The features data from OpenStreetMap", GH_ParamAccess.tree);
             pManager.AddGeometryParameter("Geometry", "geometry", "The target geometry of the projection", GH_ParamAccess.item);
-            pManager.AddVectorParameter("Direction", "direction", "The direction of projection", GH_ParamAccess.item, Vector3d.ZAxis);
         }
 
         /// <summary>
@@ -58,7 +57,6 @@ namespace TwinLand.Components.Scene_Construction
 
             if (!DA.GetDataTree("OSM Features", out data)) { return; }
             if (!DA.GetData("Geometry", ref geometry)) { return; }
-            DA.GetData("Direction", ref direction);
 
             Brep[] breps = new Brep[1];
             Mesh[] meshes = new Mesh[1];
@@ -83,17 +81,26 @@ namespace TwinLand.Components.Scene_Construction
                 GH_Path path = new GH_Path(data.get_Path(i));
                 var branch = data.get_Branch(path);
 
-                // skip all non polygon shapes
-                if (branch[0].GetType()!=GH_TypeLib.t_gh_brep) { continue; }
-
-                Point3d[] centroids = new Point3d[branch.Count];
-                Point3d[] pts_projected = new Point3d[0];
-
-                // find all centroids of polygons
+                // count the number of polygon shapes
+                int polygonCount = 0;
                 for (int j = 0; j < branch.Count; j++)
                 {
                     var polygon = branch[j];
-                    if (polygon.GetType() == GH_TypeLib.t_gh_brep)
+                    if (polygon != null && polygon.GetType() == GH_TypeLib.t_gh_brep)
+                    {
+                        polygonCount++;
+                    }
+                }
+
+                Point3d[] centroids = new Point3d[polygonCount];
+                Point3d[] pts_projected = new Point3d[0];
+
+
+                // find all centroids of polygons
+                for (int j = 0; j < polygonCount; j++)
+                {
+                    var polygon = branch[j];
+                    if (polygon != null && polygon.GetType() == GH_TypeLib.t_gh_brep)
                     {
                         GH_Brep brep = polygon as GH_Brep;
                         AreaMassProperties amp = AreaMassProperties.Compute(brep.Value);
@@ -116,11 +123,12 @@ namespace TwinLand.Components.Scene_Construction
 
                 // valify the projection count
                 int originalCount = centroids.Length;
-                if (pts_projected.Length != originalCount)
+                if (polygonCount != originalCount)
                 {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid target geometry cause projected polygon count mismatch the original polygon count");
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid target geometry cause projected polygon count mismatch the original polygon count");
                     return;
                 }
+
 
                 // get vector from mass centroid of polygons to projected pts, then move polygon base on the its moving vector
                 Vector3d[] vts = new Vector3d[originalCount];
