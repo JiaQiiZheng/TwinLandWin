@@ -34,6 +34,9 @@ using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Serialization;
 using OSGeo.OGR;
 using TwinLand;
+using System.ComponentModel.Design.Serialization;
+using System.CodeDom;
+using System.Diagnostics;
 
 namespace TwinLand
 {
@@ -49,14 +52,14 @@ namespace TwinLand
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddCurveParameter("Boundary", "boundary", "Boundary of raster request to the REST server", GH_ParamAccess.list);
-            pManager.AddIntegerParameter("Resolution", "resolution", "Resolution for raster images", GH_ParamAccess.item,1024);
+            //pManager.AddIntegerParameter("Resolution", "resolution", "Resolution for raster images", GH_ParamAccess.item,1024);
             pManager.AddTextParameter("FolderPath", "folderPath", "Target folder for saving raster images", GH_ParamAccess.item, Path.GetTempPath());
             pManager.AddTextParameter("FileName", "fileName", "File name of downloaded images", GH_ParamAccess.item, "restRaster");
-            pManager.AddTextParameter("ServiceURL", "serviceURL", "ArcGIS REST Service website to query. Use the component \nmenu item \"Create REST Raster Source List\" for some examples.", GH_ParamAccess.item);
+            //pManager.AddTextParameter("ServiceURL", "serviceURL", "ArcGIS REST Service website to query. Use the component \nmenu item \"Create REST Raster Source List\" for some examples.", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Get", "get", "Start to download raster image data from the REST server", GH_ParamAccess.item, false);
 
             // optional(preset) input
-            pManager.AddTextParameter("Spatial Reference System", "customSRS", "Customize your Spatial Reference System by standard SRS code", GH_ParamAccess.item,"WGS84");
+            pManager.AddTextParameter("Spatial Reference System", "customSRS", "Customize your Spatial Reference System by standard SRS code", GH_ParamAccess.item, "WGS84");
             pManager.AddTextParameter("ImageType", "imageType", "Set image type for the request to the REST server", GH_ParamAccess.item, "jpg");
         }
 
@@ -72,8 +75,10 @@ namespace TwinLand
             List<Curve> boundary = new List<Curve>();
             DA.GetDataList<Curve>("Boundary", boundary);
 
-            int Res = -1;
-            DA.GetData<int>("Resolution", ref Res);
+            //int resolution = -1;
+            //DA.GetData<int>("Resolution", ref resolution);
+
+            int resolution = resolutionValue;
 
             string folderPath = string.Empty;
             DA.GetData<string>("FolderPath", ref folderPath);
@@ -89,9 +94,10 @@ namespace TwinLand
             string fileName = string.Empty;
             DA.GetData<string>("FileName", ref fileName);
 
-            string serviceURL = string.Empty;
-            DA.GetData<string>("ServiceURL", ref serviceURL);
-            if (serviceURL.EndsWith(@"/")) { serviceURL = serviceURL + "export?"; }
+            //string serviceURL = string.Empty;
+            //DA.GetData<string>("ServiceURL", ref serviceURL);
+            //if (serviceURL.EndsWith(@"/")) { serviceURL = serviceURL + "export?"; }
+            string serviceURL = rasterURL;
 
             bool run = false;
             DA.GetData<bool>("Get", ref run);
@@ -112,7 +118,6 @@ namespace TwinLand
             OSGeo.OSR.SpatialReference customSRS = new OSGeo.OSR.SpatialReference("");
             customSRS.SetFromUserInput(SRS_code);
             int userSRSInt = Int16.Parse(customSRS.GetAuthorityCode(null));
-            Console.WriteLine(userSRSInt);
 
             ///Set transform from input spatial reference to Rhino spatial reference
             OSGeo.OSR.SpatialReference rhinoSRS = new OSGeo.OSR.SpatialReference("");
@@ -131,9 +136,9 @@ namespace TwinLand
             file.Directory.Create();
 
             string size = string.Empty;
-            if (Res != 0)
+            if (resolution != 0)
             {
-                size = "&size=" + Res + "%2C" + Res;
+                size = "&size=" + resolution + "%2C" + resolution;
             }
 
             for (int i = 0; i < boundary.Count; i++)
@@ -156,7 +161,7 @@ namespace TwinLand
                   size + //"&layers=&layerdefs=" +
                   "&imageSR=" + userSRSInt + //"&transparent=false&dpi=&time=&layerTimeOptions=" +
                   "&format=" + imageType;// +
-                  //"&f=json";
+                                         //"&f=json";
                 string restqueryJSON = restquery + "&f=json";
                 string restqueryImage = restquery + "&f=image";
 
@@ -164,18 +169,18 @@ namespace TwinLand
 
                 string result = string.Empty;
 
-                    ///Get extent of image from arcgis rest service as JSON
+                ///Get extent of image from arcgis rest service as JSON
+                result = TwinLand.Convert.HttpToJson(restqueryJSON);
+                JObject jObj = JsonConvert.DeserializeObject<JObject>(result);
+                if (!jObj.ContainsKey("href"))
+                {
+                    restqueryJSON = restqueryJSON.Replace("export?", "exportImage?");
+                    restqueryImage = restqueryImage.Replace("export?", "exportImage?");
+                    mapquery.RemovePath(path);
+                    mapquery.Append(new GH_String(restqueryImage), path);
                     result = TwinLand.Convert.HttpToJson(restqueryJSON);
-                    JObject jObj = JsonConvert.DeserializeObject<JObject>(result);
-                    if (!jObj.ContainsKey("href"))
-                    {
-                        restqueryJSON = restqueryJSON.Replace("export?", "exportImage?");
-                        restqueryImage = restqueryImage.Replace("export?", "exportImage?");
-                        mapquery.RemovePath(path);
-                        mapquery.Append(new GH_String(restqueryImage), path);
-                        result = TwinLand.Convert.HttpToJson(restqueryJSON);
-                        jObj = JsonConvert.DeserializeObject<JObject>(result);
-                    }
+                    jObj = JsonConvert.DeserializeObject<JObject>(result);
+                }
 
                 if (run)
                 {
@@ -189,7 +194,7 @@ namespace TwinLand
                     string imageQueryJSON = jObj["href"].ToString();
                     using (WebClient webC = new WebClient())
                     {
-                        try 
+                        try
                         {
                             if (!String.IsNullOrEmpty(imageQueryJSON))
                             {
@@ -218,85 +223,196 @@ namespace TwinLand
                 AddPreviewItem(bitmapPath, rect);
             }
 
+            this.Message = GetMessage(dynamicMessage);
+
             DA.SetDataTree(0, mapList);
             DA.SetDataTree(1, imgFrame);
             DA.SetDataTree(2, mapquery);
         }
-
-
-
-        private JObject rasterJson = JObject.Parse(TwinLand.Convert.GetEndpoints());
 
         /// <summary>
         /// Adds to the context menu an option to create a pre-populated list of common REST Raster sources
         /// </summary>
         /// <param name="menu"></param>
         /// https://discourse.mcneel.com/t/generated-valuelist-not-working/79406/6?u=hypar
-        public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+        //public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+        //{
+        //    var rasterSourcesJson = sourceJson["REST Raster"].Select(x => x["source"]).Distinct();
+        //    List<string> rasterSources = rasterSourcesJson.Values<string>().ToList();
+        //    foreach (var src in rasterSourcesJson)
+        //    {
+        //        ToolStripMenuItem root = GH_DocumentObject.Menu_AppendItem(menu, "Create " + src.ToString() + " Source List", CreateRasterList);
+        //        root.ToolTipText = "Click this to create a pre-populated list of some " + src.ToString() + " sources.";
+        //        base.AppendAdditionalMenuItems(menu);
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Creates a value list pre-populated with possible accent colors and adds it to the Grasshopper Document, located near the component pivot.
+        ///// </summary>
+        ///// <param name="sender">The sender.</param>
+        ///// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        //private void CreateRasterList(object sender, System.EventArgs e)
+        //{
+        //    string source = sender.ToString();
+        //    source = source.Replace("Create ", "");
+        //    source = source.Replace(" Source List", "");
+
+        //    GH_DocumentIO docIO = new GH_DocumentIO();
+        //    docIO.Document = new GH_Document();
+
+        //    ///Initialize object
+        //    GH_ValueList vl = new GH_ValueList();
+
+        //    ///Clear default contents
+        //    vl.ListItems.Clear();
+
+        //    foreach (var service in sourceJson["REST Raster"])
+        //    {
+        //        if (service["source"].ToString() == source)
+        //        {
+        //            GH_ValueListItem vi = new GH_ValueListItem(service["service"].ToString(), String.Format("\"{0}\"", service["url"].ToString()));
+        //            vl.ListItems.Add(vi);
+        //        }
+        //    }
+
+        //    ///Set component nickname
+        //    vl.NickName = source;
+
+        //    ///Get active GH doc
+        //    GH_Document doc = OnPingDocument();
+        //    if (docIO.Document == null) return;
+
+        //    ///Place the object
+        //    docIO.Document.AddObject(vl, false, 1);
+
+        //    ///Get the pivot of the "serviceURL" param
+        //    PointF currPivot = Params.Input[4].Attributes.Pivot;
+
+        //    ///Set the pivot of the new object
+        //    vl.Attributes.Pivot = new PointF(currPivot.X - 400, currPivot.Y - 11);
+
+        //    docIO.Document.SelectAll();
+        //    docIO.Document.ExpireSolution();
+        //    docIO.Document.MutateAllIds();
+        //    IEnumerable<IGH_DocumentObject> objs = docIO.Document.Objects;
+        //    doc.DeselectAll();
+        //    doc.UndoUtil.RecordAddObjectEvent("Create REST Raster Source List", objs);
+        //    doc.MergeDocument(docIO.Document);
+        //}
+
+        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
         {
-            var rasterSourcesJson = rasterJson["REST Raster"].Select(x => x["source"]).Distinct();
-            List<string> rasterSources = rasterSourcesJson.Values<string>().ToList();
-            foreach (var src in rasterSourcesJson)
+            // create raster service menu
+            ToolStripMenuItem root_rasterService = new ToolStripMenuItem("Select Raster Service");
+
+            foreach (var rasterService in sourceJson["REST Raster"])
             {
-                ToolStripMenuItem root = GH_DocumentObject.Menu_AppendItem(menu, "Create " + src.ToString() + " Source List", CreateRasterList);
-                root.ToolTipText = "Click this to create a pre-populated list of some " + src.ToString() + " sources.";
-                base.AppendAdditionalMenuItems(menu);
+                string serviceString = rasterService["service"].ToString();
+
+                ToolStripMenuItem serviceItem = new ToolStripMenuItem(serviceString);
+                serviceItem.Tag = serviceString;
+                serviceItem.Checked = IsRasterServiceSelected(serviceString);
+                serviceItem.ToolTipText = rasterService["description"].ToString();
+                serviceItem.Click += ServiceItemOnClick;
+
+                root_rasterService.DropDownItems.Add(serviceItem);
             }
+
+            // create resolution menu
+            ToolStripMenuItem root_resolution = new ToolStripMenuItem("Select Raster Resolution");
+
+            foreach (var resolution in sourceJson["Raster Resolution"])
+            {
+                string resolutionString = resolution["level"].ToString();
+
+                ToolStripMenuItem resolutionItem = new ToolStripMenuItem(resolutionString);
+                resolutionItem.Tag = resolutionString;
+                resolutionItem.Checked = IsResolutionSelected(resolutionString);
+                resolutionItem.ToolTipText = resolution["description"].ToString();
+                resolutionItem.Click += ResolutionOnClick;
+
+                root_resolution.DropDownItems.Add(resolutionItem);
+            }
+
+            // append items onto menu in component
+            menu.Items.Add(root_rasterService);
+            menu.Items.Add(root_resolution);
+
+            base.AppendAdditionalComponentMenuItems(menu);
+        }
+
+        private bool IsRasterServiceSelected(string serviceString)
+        {
+            return serviceString.Equals(rasterSource);
+        }
+
+        private bool IsResolutionSelected(string resolutionString)
+        {
+            return resolutionString.Equals(resolutionValue);
+        }
+
+
+        private void ServiceItemOnClick(object sender, EventArgs eventArgs)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item == null) return;
+            string code = (string)item.Tag;
+            if (IsRasterServiceSelected(code)) return;
+
+            RecordUndoEvent("Raster Source");
+            RecordUndoEvent("Raster URL");
+
+            rasterSource = code;
+            rasterURL = sourceJson["REST Raster"].SelectToken("[?(@.service == '" + rasterSource + "')].url").ToString();
+            dynamicMessage[0] = code;
+            Message = GetMessage(dynamicMessage);
+
+            ExpireSolution(true);
+        }
+
+        private void ResolutionOnClick(object sender, EventArgs eventArgs)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item == null) return;
+            string code = (string)item.Tag;
+            if (IsResolutionSelected(code)) return;
+
+            RecordUndoEvent("Resolution Level");
+            RecordUndoEvent("Resolution Value");
+
+            resolutionLevel = code;
+            string resolutionValueString = sourceJson["Raster Resolution"].SelectToken("[?(@.level == '" + resolutionLevel + "')].resolution").ToString();
+            resolutionValue = Int32.Parse(resolutionValueString);
+            dynamicMessage[1] = resolutionLevel;
+            Message = GetMessage(dynamicMessage);
+
+            ExpireSolution(true);
+        }
+
+        private string GetMessage(string[] messageInfos)
+        {
+            string message = "Raster Service: " + messageInfos[0] + ", " + "Raster Resolution: " + messageInfos[1];
+
+            return message;
         }
 
         /// <summary>
-        /// Creates a value list pre-populated with possible accent colors and adds it to the Grasshopper Document, located near the component pivot.
+        /// Dynamic variables
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        private void CreateRasterList(object sender, System.EventArgs e)
-        {
-            string source = sender.ToString();
-            source = source.Replace("Create ", "");
-            source = source.Replace(" Source List", "");
+        private string sourceList = TwinLand.Convert.GetEndpoints();
+        private JObject sourceJson = JObject.Parse(TwinLand.Convert.GetEndpoints());
 
-            GH_DocumentIO docIO = new GH_DocumentIO();
-            docIO.Document = new GH_Document();
+        // default raster service selection
+        private string rasterSource = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Raster"][0]["service"].ToString();
+        private string rasterURL = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Raster"][0]["url"].ToString();
 
-            ///Initialize object
-            GH_ValueList vl = new GH_ValueList();
+        // default raster resolution selection
+        private string resolutionLevel = "high";
+        private int resolutionValue = 1024;
 
-            ///Clear default contents
-            vl.ListItems.Clear();
-
-            foreach (var service in rasterJson["REST Raster"])
-            {
-                if (service["source"].ToString() == source)
-                {
-                    GH_ValueListItem vi = new GH_ValueListItem(service["service"].ToString(), String.Format("\"{0}\"", service["url"].ToString()));
-                    vl.ListItems.Add(vi);
-                }
-            }
-
-            ///Set component nickname
-            vl.NickName = source;
-            
-            ///Get active GH doc
-            GH_Document doc = OnPingDocument();
-            if (docIO.Document == null) return;
-            
-            ///Place the object
-            docIO.Document.AddObject(vl, false, 1);
-            
-            ///Get the pivot of the "serviceURL" param
-            PointF currPivot = Params.Input[4].Attributes.Pivot;
-            
-            ///Set the pivot of the new object
-            vl.Attributes.Pivot = new PointF(currPivot.X - 400, currPivot.Y - 11);
-
-            docIO.Document.SelectAll();
-            docIO.Document.ExpireSolution();
-            docIO.Document.MutateAllIds();
-            IEnumerable<IGH_DocumentObject> objs = docIO.Document.Objects;
-            doc.DeselectAll();
-            doc.UndoUtil.RecordAddObjectEvent("Create REST Raster Source List", objs);
-            doc.MergeDocument(docIO.Document);
-        }
+        // dynamic message in component
+        private string[] dynamicMessage = new string[2]{ JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Raster"][0]["service"].ToString(), "high"};
 
         protected override System.Drawing.Bitmap Icon
         {

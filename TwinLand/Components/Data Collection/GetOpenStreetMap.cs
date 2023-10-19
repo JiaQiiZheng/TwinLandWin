@@ -43,7 +43,7 @@ namespace TwinLand
             pManager.AddTextParameter("TargetFolder", "targetFolder", "The folder path of the downloaded .osm file located",
               GH_ParamAccess.item, Path.GetTempPath());
             pManager.AddTextParameter("FileName", "fileName", "The file name of the downloaded .osm file", GH_ParamAccess.item, OSMSource);
-            pManager.AddTextParameter("OSMTag_Key", "OSMTag_Key", "Optional indicate specific layer in OpenStreetMap dataset",
+            pManager.AddTextParameter("OpenStreetMap Primary Feature: Key", "key", "Optional indicate specific layer in OpenStreetMap dataset, example: natural, highway, and etc",
               GH_ParamAccess.item);
             pManager.AddTextParameter("OverpassQueryLanguage", "overpassQL",
               "Code applying onto OpenStreetMap data fetching process", GH_ParamAccess.item);
@@ -95,11 +95,11 @@ namespace TwinLand
                 fileName = osmSource;
             }
 
-            string OSMTag_Key = string.Empty;
-            DA.GetData("OSMTag_Key", ref OSMTag_Key);
-            if (!string.IsNullOrEmpty(OSMTag_Key))
+            string key = string.Empty;
+            DA.GetData("OpenStreetMap Primary Feature: Key", ref key);
+            if (!string.IsNullOrEmpty(key))
             {
-                OSMTag_Key = System.Net.WebUtility.UrlEncode($"[{OSMTag_Key}]");
+                key = System.Net.WebUtility.UrlEncode($"[{key}]");
             }
 
             string overpassQL = string.Empty;
@@ -152,7 +152,7 @@ namespace TwinLand
                 }
                 else
                 {
-                    oq = Convert.GetOSMURL(timeout, OSMTag_Key, left, bottom, right, top, osmURL);
+                    oq = Convert.GetOSMURL(timeout, key, left, bottom, right, top, osmURL);
                     osmQuery.Append(new GH_String(oq));
                     DA.SetDataTree(1, osmQuery);
                 }
@@ -198,7 +198,7 @@ namespace TwinLand
             }
 
             JObject osmJson = JObject.Parse(osmSourceList);
-            ToolStripMenuItem root = new ToolStripMenuItem("Pick OSM vector service");
+            ToolStripMenuItem root = new ToolStripMenuItem("Select OSM vector service");
 
             foreach (var service in osmJson["OSM Vector"])
             {
@@ -233,6 +233,7 @@ namespace TwinLand
 
             GH_ValueList vl = new GH_ValueList();
             vl.ListMode = GH_ValueListMode.CheckList;
+            
 
             vl.ListItems.Clear();
 
@@ -271,7 +272,7 @@ namespace TwinLand
             docIO.Document.MutateAllIds();
             IEnumerable<IGH_DocumentObject> objs = docIO.Document.Objects;
             doc.DeselectAll();
-            doc.UndoUtil.RecordAddObjectEvent("Create REST Raster Source List", objs);
+            doc.UndoUtil.RecordAddObjectEvent("Create OpenStreetMap Feature Table", objs);
             doc.MergeDocument(docIO.Document);
         }
 

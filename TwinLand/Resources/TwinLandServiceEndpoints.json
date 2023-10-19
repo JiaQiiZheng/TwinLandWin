@@ -364,6 +364,31 @@
       "source": "USGS Raster"
     }
   ],
+  "Raster Resolution": [
+    {
+      "level": "low",
+      "resolution": "256",
+      "description": "256 px"
+    },
+    {
+      "level": "mid",
+      "resolution": "512",
+      "description": "512 px"
+
+    },
+    {
+      "level": "high",
+      "resolution": "1024",
+      "description": "1024 px"
+
+    },
+    {
+      "level": "max",
+      "resolution": "2048",
+      "description": "2048 px"
+
+    }
+  ],
   "Slippy Maps": [
     {
       "service": "ESRI ArcGIS World Imagery",

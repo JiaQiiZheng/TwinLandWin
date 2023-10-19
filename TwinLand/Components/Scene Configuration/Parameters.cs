@@ -156,81 +156,6 @@ namespace TwinLand
             #endregion
         }
 
-        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
-        {
-            ToolStripMenuItem saveParamsBtn = Menu_AppendItem(menu, "Save Parameters", SaveParamsBtnClicked);
-            saveParamsBtn.ToolTipText = "Save parameters as .xml file which could be import by \"Parameters Reader\" component for usuage next time";
-        }
-
-        private void SaveParamsBtnClicked(Object sender, EventArgs eventArgs)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Parameter XML files (*.xml)|*.xml";
-            saveFileDialog.InitialDirectory = ".";
-
-            DialogResult res = saveFileDialog.ShowDialog();
-            
-            if (res == DialogResult.OK)
-            {
-                try
-                {
-                    List<string> paramString = new List<string>();
-
-                    paramString.Add("<?xml version=\"1.0\"?>\n<paramObj>");
-
-                    #region write params into .xml
-                    paramString.Add($"<{nameof(paramObj.Adhesion)}>{paramObj.Adhesion}</{nameof(paramObj.Adhesion)}>");
-                    paramString.Add($"<{nameof(paramObj.Buoyancy)}>{paramObj.Buoyancy}</{nameof(paramObj.Buoyancy)}>");
-                    paramString.Add($"<{nameof(paramObj.Cohesion)}>{paramObj.Cohesion}</{nameof(paramObj.Cohesion)}>");
-                    paramString.Add($"<{nameof(paramObj.CollisionDistance)}>{paramObj.CollisionDistance}</{nameof(paramObj.CollisionDistance)}>");
-                    paramString.Add($"<{nameof(paramObj.Damping)}>{paramObj.Damping}</{nameof(paramObj.Damping)}>");
-                    paramString.Add($"<{nameof(paramObj.DiffuseBallistic)}>{paramObj.DiffuseBallistic}</{nameof(paramObj.DiffuseBallistic)}>");
-                    paramString.Add($"<{nameof(paramObj.Dissipation)}>{paramObj.Dissipation}</{nameof(paramObj.Dissipation)}>");
-                    paramString.Add($"<{nameof(paramObj.Drag)}>{paramObj.Drag}</{nameof(paramObj.Drag)}>");
-                    paramString.Add($"<{nameof(paramObj.DynamicFriction)}>{paramObj.DynamicFriction}</{nameof(paramObj.DynamicFriction)}>");
-                    paramString.Add($"<{nameof(paramObj.Fluid)}>{paramObj.Fluid}</{nameof(paramObj.Fluid)}>");
-                    paramString.Add($"<{nameof(paramObj.FluidRestDistance)}>{paramObj.FluidRestDistance}</{nameof(paramObj.FluidRestDistance)}>");
-                    paramString.Add($"<{nameof(paramObj.FreeSurfaceDrag)}>{paramObj.FreeSurfaceDrag}</{nameof(paramObj.FreeSurfaceDrag)}>");
-                    paramString.Add($"<{nameof(paramObj.Lift)}>{paramObj.Lift}</{nameof(paramObj.Lift)}>");
-                    paramString.Add($"<{nameof(paramObj.MaxAcceleration)}>{paramObj.MaxAcceleration}</{nameof(paramObj.MaxAcceleration)}>");
-                    paramString.Add($"<{nameof(paramObj.MaxSpeed)}>{paramObj.MaxSpeed}</{nameof(paramObj.MaxSpeed)}>");
-                    paramString.Add($"<{nameof(paramObj.ParticleCollisionMargin)}>{paramObj.ParticleCollisionMargin}</{nameof(paramObj.ParticleCollisionMargin)}>");
-                    paramString.Add($"<{nameof(paramObj.ParticleFriction)}>{paramObj.ParticleFriction}</{nameof(paramObj.ParticleFriction)}>");
-                    paramString.Add($"<{nameof(paramObj.PlasticCreep)}>{paramObj.PlasticCreep}</{nameof(paramObj.PlasticCreep)}>");
-                    paramString.Add($"<{nameof(paramObj.PlasticThreshold)}>{paramObj.PlasticThreshold}</{nameof(paramObj.PlasticThreshold)}>");
-                    paramString.Add($"<{nameof(paramObj.Radius)}>{paramObj.Radius}</{nameof(paramObj.Radius)}>");
-                    paramString.Add($"<{nameof(paramObj.RelaxationFactor)}>{paramObj.RelaxationFactor}</{nameof(paramObj.RelaxationFactor)}>");
-                    paramString.Add($"<{nameof(paramObj.RelaxationMode)}>{paramObj.RelaxationMode}</{nameof(paramObj.RelaxationMode)}>");
-                    paramString.Add($"<{nameof(paramObj.Restitution)}>{paramObj.Restitution}</{nameof(paramObj.Restitution)}>");
-                    paramString.Add($"<{nameof(paramObj.ShapeCollisionMargin)}>{paramObj.ShapeCollisionMargin}</{nameof(paramObj.ShapeCollisionMargin)}>");
-                    paramString.Add($"<{nameof(paramObj.ShockPropagation)}>{paramObj.ShockPropagation}</{nameof(paramObj.ShockPropagation)}>");
-                    paramString.Add($"<{nameof(paramObj.SleepThreshold)}>{paramObj.SleepThreshold}</{nameof(paramObj.SleepThreshold)}>");
-                    paramString.Add($"<{nameof(paramObj.SolidPressure)}>{paramObj.SolidPressure}</{nameof(paramObj.SolidPressure)}>");
-                    paramString.Add($"<{nameof(paramObj.SolidRestDistance)}>{paramObj.SolidRestDistance}</{nameof(paramObj.SolidRestDistance)}>");
-                    paramString.Add($"<{nameof(paramObj.StaticFriction)}>{paramObj.StaticFriction}</{nameof(paramObj.StaticFriction)}>");
-                    paramString.Add($"<{nameof(paramObj.SurfaceTension)}>{paramObj.SurfaceTension}</{nameof(paramObj.SurfaceTension)}>");
-                    paramString.Add($"<{nameof(paramObj.Viscosity)}>{paramObj.Viscosity}</{nameof(paramObj.Viscosity)}>");
-                    paramString.Add($"<{nameof(paramObj.WindX)}>{paramObj.WindX}</{nameof(paramObj.WindX)}>");
-                    paramString.Add($"<{nameof(paramObj.WindY)}>{paramObj.WindY}</{nameof(paramObj.WindY)}>");
-                    paramString.Add($"<{nameof(paramObj.WindZ)}>{paramObj.WindZ}</{nameof(paramObj.WindZ)}>");
-                    //paramString.Add($"<{nameof()}>{}</{nameof()}>"); 
-                    #endregion
-
-                    paramString.Add("</paramObj>");
-
-
-                    System.IO.Stream stream = System.IO.File.Open(saveFileDialog.FileName, System.IO.FileMode.Create);
-                    stream.Close();
-                    System.IO.File.WriteAllLines(saveFileDialog.FileName, paramString);
-                }
-                catch (Exception e)
-                {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Fail to save .xml file:\n" + e.Message);
-                }
-            }
-        }
-
-
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
@@ -238,21 +163,14 @@ namespace TwinLand
         {
             pManager.AddGenericParameter("Parameters", "parameters", "Converted Parameters setting object for FleX engine",
               GH_ParamAccess.item);
+            pManager.AddTextParameter("Parameters Logger", "parameters logger", "", GH_ParamAccess.list);
         }
 
-        /// <summary>
-        /// global variable
-        /// </summary>
-        FlexParams paramObj = new FlexParams();
-
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             paramObj = new FlexParams();
+            List<ParamCombo> paramComboList = new List<ParamCombo>();
+            List<string> paramLog = new List<string>();
 
             // initialize coefficients
             // particle properties
@@ -260,7 +178,10 @@ namespace TwinLand
             double iRadius = 0.15;
 
             DA.GetData("Gravity Acceleration", ref ga);
+            paramComboList.Add(new ParamCombo("Gravity Acceleration", ga));
+
             DA.GetData("Interaction Radius", ref iRadius);
+            paramComboList.Add(new ParamCombo("Interaction Radius", iRadius));
 
             // collision
             double srd = 0.075;
@@ -272,12 +193,25 @@ namespace TwinLand
             double mxa = 0.0;
 
             DA.GetData("Solid Rest Distance", ref srd);
+            paramComboList.Add(new ParamCombo("Solid Rest Distance", srd));
+
             DA.GetData("Fluid Rest Distance", ref frd);
+            paramComboList.Add(new ParamCombo("Solid Rest Distance", frd));
+
             DA.GetData("Collision Distance", ref cd);
+            paramComboList.Add(new ParamCombo("Collision Distance", cd));
+
             DA.GetData("Particle Collision Margin", ref pcm);
+            paramComboList.Add(new ParamCombo("Particle Collision Margin", pcm));
+
             DA.GetData("Shape Collision Margin", ref scm);
+            paramComboList.Add(new ParamCombo("Shape Collision Margin", scm));
+
             DA.GetData("Maximum Speed", ref mxs);
+            paramComboList.Add(new ParamCombo("Maximum Speed", mxs));
+
             DA.GetData("Maximum Acceleration", ref mxa);
+            paramComboList.Add(new ParamCombo("Maximum Acceleration", mxa));
 
             // friction
             double df = 0.0;
@@ -291,14 +225,32 @@ namespace TwinLand
             double dam = 0.0;
 
             DA.GetData("Coefficient of Dynamic Friction", ref df);
+            paramComboList.Add(new ParamCombo("Coefficient of Dynamic Friction", df));
+
             DA.GetData("Coefficient of Static Friction", ref sf);
+            paramComboList.Add(new ParamCombo("Coefficient of Static Friction", sf));
+
             DA.GetData("Coefficient of Particle Friction", ref pf);
+            paramComboList.Add(new ParamCombo("Coefficient of Particle Friction", pf));
+
             DA.GetData("Restitution", ref res);
+            paramComboList.Add(new ParamCombo("Restitution", res));
+
             DA.GetData("Adhesion", ref adh);
+            paramComboList.Add(new ParamCombo("Adhesion", adh));
+
             DA.GetData("Particle Stop Threshold", ref pst);
+            paramComboList.Add(new ParamCombo("Particle Stop Threshold", pst));
+
             DA.GetData("Shock Propagation", ref shp);
+            paramComboList.Add(new ParamCombo("Shock Propagation", shp));
+
             DA.GetData("Dissipation", ref dis);
+            paramComboList.Add(new ParamCombo("Dissipation", dis));
+
             DA.GetData("Damping", ref dam);
+            paramComboList.Add(new ParamCombo("Damping", dam));
+
 
             // fluid
             bool flu = true;
@@ -391,7 +343,110 @@ namespace TwinLand
             paramObj.RelaxationMode = rm ? 1 : 0;
             paramObj.RelaxationFactor = (float)rf;
 
+            // append params combo into logger
+            foreach (var combo in paramComboList)
+            {
+                paramLog.Add(GetParamsString(combo));
+            }
+
             DA.SetData("Parameters", paramObj);
+            DA.SetDataList(1, paramLog);
+        }
+
+        /// <summary>
+        /// Additional methods
+        /// </summary>
+        /// <param name="menu"></param>
+        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+        {
+            ToolStripMenuItem saveParamsBtn = Menu_AppendItem(menu, "Save Parameters", SaveParamsBtnClicked);
+            saveParamsBtn.ToolTipText = "Save parameters as .xml file which could be import by \"Parameters Reader\" component for usuage next time";
+        }
+
+        private void SaveParamsBtnClicked(Object sender, EventArgs eventArgs)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Parameter XML files (*.xml)|*.xml";
+            saveFileDialog.InitialDirectory = ".";
+
+            DialogResult res = saveFileDialog.ShowDialog();
+
+            if (res == DialogResult.OK)
+            {
+                try
+                {
+                    List<string> paramString = new List<string>();
+
+                    paramString.Add("<?xml version=\"1.0\"?>\n<paramObj>");
+
+                    #region write params into .xml
+                    paramString.Add($"<{nameof(paramObj.Adhesion)}>{paramObj.Adhesion}</{nameof(paramObj.Adhesion)}>");
+                    paramString.Add($"<{nameof(paramObj.Buoyancy)}>{paramObj.Buoyancy}</{nameof(paramObj.Buoyancy)}>");
+                    paramString.Add($"<{nameof(paramObj.Cohesion)}>{paramObj.Cohesion}</{nameof(paramObj.Cohesion)}>");
+                    paramString.Add($"<{nameof(paramObj.CollisionDistance)}>{paramObj.CollisionDistance}</{nameof(paramObj.CollisionDistance)}>");
+                    paramString.Add($"<{nameof(paramObj.Damping)}>{paramObj.Damping}</{nameof(paramObj.Damping)}>");
+                    paramString.Add($"<{nameof(paramObj.DiffuseBallistic)}>{paramObj.DiffuseBallistic}</{nameof(paramObj.DiffuseBallistic)}>");
+                    paramString.Add($"<{nameof(paramObj.Dissipation)}>{paramObj.Dissipation}</{nameof(paramObj.Dissipation)}>");
+                    paramString.Add($"<{nameof(paramObj.Drag)}>{paramObj.Drag}</{nameof(paramObj.Drag)}>");
+                    paramString.Add($"<{nameof(paramObj.DynamicFriction)}>{paramObj.DynamicFriction}</{nameof(paramObj.DynamicFriction)}>");
+                    paramString.Add($"<{nameof(paramObj.Fluid)}>{paramObj.Fluid}</{nameof(paramObj.Fluid)}>");
+                    paramString.Add($"<{nameof(paramObj.FluidRestDistance)}>{paramObj.FluidRestDistance}</{nameof(paramObj.FluidRestDistance)}>");
+                    paramString.Add($"<{nameof(paramObj.FreeSurfaceDrag)}>{paramObj.FreeSurfaceDrag}</{nameof(paramObj.FreeSurfaceDrag)}>");
+                    paramString.Add($"<{nameof(paramObj.Lift)}>{paramObj.Lift}</{nameof(paramObj.Lift)}>");
+                    paramString.Add($"<{nameof(paramObj.MaxAcceleration)}>{paramObj.MaxAcceleration}</{nameof(paramObj.MaxAcceleration)}>");
+                    paramString.Add($"<{nameof(paramObj.MaxSpeed)}>{paramObj.MaxSpeed}</{nameof(paramObj.MaxSpeed)}>");
+                    paramString.Add($"<{nameof(paramObj.ParticleCollisionMargin)}>{paramObj.ParticleCollisionMargin}</{nameof(paramObj.ParticleCollisionMargin)}>");
+                    paramString.Add($"<{nameof(paramObj.ParticleFriction)}>{paramObj.ParticleFriction}</{nameof(paramObj.ParticleFriction)}>");
+                    paramString.Add($"<{nameof(paramObj.PlasticCreep)}>{paramObj.PlasticCreep}</{nameof(paramObj.PlasticCreep)}>");
+                    paramString.Add($"<{nameof(paramObj.PlasticThreshold)}>{paramObj.PlasticThreshold}</{nameof(paramObj.PlasticThreshold)}>");
+                    paramString.Add($"<{nameof(paramObj.Radius)}>{paramObj.Radius}</{nameof(paramObj.Radius)}>");
+                    paramString.Add($"<{nameof(paramObj.RelaxationFactor)}>{paramObj.RelaxationFactor}</{nameof(paramObj.RelaxationFactor)}>");
+                    paramString.Add($"<{nameof(paramObj.RelaxationMode)}>{paramObj.RelaxationMode}</{nameof(paramObj.RelaxationMode)}>");
+                    paramString.Add($"<{nameof(paramObj.Restitution)}>{paramObj.Restitution}</{nameof(paramObj.Restitution)}>");
+                    paramString.Add($"<{nameof(paramObj.ShapeCollisionMargin)}>{paramObj.ShapeCollisionMargin}</{nameof(paramObj.ShapeCollisionMargin)}>");
+                    paramString.Add($"<{nameof(paramObj.ShockPropagation)}>{paramObj.ShockPropagation}</{nameof(paramObj.ShockPropagation)}>");
+                    paramString.Add($"<{nameof(paramObj.SleepThreshold)}>{paramObj.SleepThreshold}</{nameof(paramObj.SleepThreshold)}>");
+                    paramString.Add($"<{nameof(paramObj.SolidPressure)}>{paramObj.SolidPressure}</{nameof(paramObj.SolidPressure)}>");
+                    paramString.Add($"<{nameof(paramObj.SolidRestDistance)}>{paramObj.SolidRestDistance}</{nameof(paramObj.SolidRestDistance)}>");
+                    paramString.Add($"<{nameof(paramObj.StaticFriction)}>{paramObj.StaticFriction}</{nameof(paramObj.StaticFriction)}>");
+                    paramString.Add($"<{nameof(paramObj.SurfaceTension)}>{paramObj.SurfaceTension}</{nameof(paramObj.SurfaceTension)}>");
+                    paramString.Add($"<{nameof(paramObj.Viscosity)}>{paramObj.Viscosity}</{nameof(paramObj.Viscosity)}>");
+                    paramString.Add($"<{nameof(paramObj.WindX)}>{paramObj.WindX}</{nameof(paramObj.WindX)}>");
+                    paramString.Add($"<{nameof(paramObj.WindY)}>{paramObj.WindY}</{nameof(paramObj.WindY)}>");
+                    paramString.Add($"<{nameof(paramObj.WindZ)}>{paramObj.WindZ}</{nameof(paramObj.WindZ)}>");
+                    //paramString.Add($"<{nameof()}>{}</{nameof()}>"); 
+                    #endregion
+
+                    paramString.Add("</paramObj>");
+
+
+                    System.IO.Stream stream = System.IO.File.Open(saveFileDialog.FileName, System.IO.FileMode.Create);
+                    stream.Close();
+                    System.IO.File.WriteAllLines(saveFileDialog.FileName, paramString);
+                }
+                catch (Exception e)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Fail to save .xml file:\n" + e.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dynamic variable
+        /// </summary>
+        FlexParams paramObj = new FlexParams();
+
+        /// <summary>
+        /// This is the method that actually does the work.
+        /// </summary>
+        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
+        /// to store data in output parameters.</param>
+
+        private string GetParamsString(ParamCombo pc)
+        {
+            string str = $"{pc.paramName} = {pc.paramValue} {new string('-', 20)} Pamameter Type: {pc.paramType.Split('.')[pc.paramType.Split('.').Length-1]}";
+
+            return str;
         }
 
         /// <summary>

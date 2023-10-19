@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 using FlexCLI;
@@ -36,6 +37,7 @@ namespace TwinLand.Components.FleX_Configuration
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddGenericParameter("Parameters", "parameters", "Parameters object for Engine", GH_ParamAccess.item);
+            pManager.AddTextParameter("Parameters Logger", "parameters logger", "", GH_ParamAccess.list);
         }
 
         bool isDefaultFile = false;
@@ -57,7 +59,7 @@ namespace TwinLand.Components.FleX_Configuration
             {
                 try
                 {
-                    string defaultString = "<?xml version=\"1.0\"?><params><GravityX>0.0</GravityX><GravityY>0.0</GravityY><GravityZ>-9.81</GravityZ><WindX>0.0</WindX><WindY>0.0</WindY><WindZ>0.0</WindZ><Radius>0.15</Radius><Viscosity>0.0</Viscosity><DynamicFriction>0.0</DynamicFriction><StaticFriction>0.0</StaticFriction><ParticleFriction>0.0</ParticleFriction><FreeSurfaceDrag>0.0</FreeSurfaceDrag><Drag>0.0</Drag><Lift>0.0</Lift><FluidRestDistance>0.1</FluidRestDistance><SolidRestDistance>0.15</SolidRestDistance><Dissipation>0.0</Dissipation><Damping>0.0</Damping><ParticleCollisionMargin>0.075</ParticleCollisionMargin><ShapeCollisionMargin>0.075</ShapeCollisionMargin><CollisionDistance>0.075</CollisionDistance><PlasticThreshold>0.0</PlasticThreshold><PlasticCreep>0.0</PlasticCreep><Fluid>true</Fluid><SleepThreshold>0.0</SleepThreshold><ShockPropagation>0.0</ShockPropagation><Restitution>0.0</Restitution><MaxSpeed>3.402823466e+38</MaxSpeed><MaxAcceleration>100.0</MaxAcceleration><RelaxationMode>1</RelaxationMode><RelaxationFactor>1.0</RelaxationFactor><SolidPressure>1.0</SolidPressure><Adhesion>0.0</Adhesion><Cohesion>0.025</Cohesion><SurfaceTension>0.0</SurfaceTension><Buoyancy>1.0</Buoyancy></params>";
+                    string defaultString = "<?xml version=\"1.0\"?><params><GravityX>0.0</GravityX><GravityY>0.0</GravityY><GravityZ>-9.81</GravityZ><WindX>0.0</WindX><WindY>0.0</ ><WindZ>0.0</WindZ><Radius>0.15</Radius><Viscosity>0.0</Viscosity><DynamicFriction>0.0</DynamicFriction><StaticFriction>0.0</StaticFriction><ParticleFriction>0.0</ParticleFriction><FreeSurfaceDrag>0.0</FreeSurfaceDrag><Drag>0.0</Drag><Lift>0.0</Lift><FluidRestDistance>0.1</FluidRestDistance><SolidRestDistance>0.15</SolidRestDistance><Dissipation>0.0</Dissipation><Damping>0.0</Damping><ParticleCollisionMargin>0.075</ParticleCollisionMargin><ShapeCollisionMargin>0.075</ShapeCollisionMargin><CollisionDistance>0.075</CollisionDistance><PlasticThreshold>0.0</PlasticThreshold><PlasticCreep>0.0</PlasticCreep><Fluid>true</Fluid><SleepThreshold>0.0</SleepThreshold><ShockPropagation>0.0</ShockPropagation><Restitution>0.0</Restitution><MaxSpeed>3.402823466e+38</MaxSpeed><MaxAcceleration>100.0</MaxAcceleration><RelaxationMode>1</RelaxationMode><RelaxationFactor>1.0</RelaxationFactor><SolidPressure>1.0</SolidPressure><Adhesion>0.0</Adhesion><Cohesion>0.025</Cohesion><SurfaceTension>0.0</SurfaceTension><Buoyancy>1.0</Buoyancy></params>";
 
                     XmlDocument xdoc = new XmlDocument();
                     xdoc.LoadXml(defaultString);
@@ -84,6 +86,7 @@ namespace TwinLand.Components.FleX_Configuration
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             FlexParams param = new FlexParams();
+            List<string> paramComboList = new List<string>();
 
             if (!isDefaultFile)
             {
@@ -112,7 +115,6 @@ namespace TwinLand.Components.FleX_Configuration
                 path = root.Substring(0, root.LastIndexOf(@"\") + 1) + path;
             }
 
-            Debug.WriteLine(path);
             doc.Load(path);
 
             foreach (XmlNode node in doc.DocumentElement.ChildNodes)
@@ -270,9 +272,15 @@ namespace TwinLand.Components.FleX_Configuration
                 else
                     AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Param couldn't be identified: " + node.Name);
                 #endregion
+
+                // append param values into parameters logger
+                paramComboList.Add($"{node.Name} = {node.InnerText}");
             }
 
+            this.Message = path.Split('\\')[path.Split('\\').Length - 1];
+
             DA.SetData("Parameters", param);
+            DA.SetDataList(1, paramComboList);
         }
 
         /// <summary>

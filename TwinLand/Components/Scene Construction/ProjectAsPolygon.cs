@@ -93,7 +93,7 @@ namespace TwinLand.Components.Scene_Construction
                 }
 
                 Point3d[] centroids = new Point3d[polygonCount];
-                Point3d[] pts_projected = new Point3d[0];
+                Point3d[] pts_projected = new Point3d[polygonCount];
 
 
                 // find all centroids of polygons
@@ -122,19 +122,23 @@ namespace TwinLand.Components.Scene_Construction
                 }
 
                 // valify the projection count
-                int originalCount = centroids.Length;
-                if (polygonCount != originalCount)
+                if (pts_projected == null)
                 {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid target geometry cause projected polygon count mismatch the original polygon count");
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "no valid polygon could be projected.");
                     return;
+                }
+                int projectedCount = pts_projected.Length;
+                if (polygonCount != projectedCount)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "some centroid points of geometry failed in projection");
                 }
 
 
                 // get vector from mass centroid of polygons to projected pts, then move polygon base on the its moving vector
-                Vector3d[] vts = new Vector3d[originalCount];
+                Vector3d[] vts = new Vector3d[projectedCount];
                 List<IGH_GeometricGoo> projectedBrep = new List<IGH_GeometricGoo>();
 
-                for (int j = 0; j < originalCount; j++)
+                for (int j = 0; j < projectedCount; j++)
                 {
                     Point3d mc = centroids[j];
                     Point3d pp = pts_projected[j];
