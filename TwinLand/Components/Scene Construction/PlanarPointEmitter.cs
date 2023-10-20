@@ -95,18 +95,19 @@ namespace TwinLand.Components.FleX_Construct
 
                     // random in rectangle area
                     pts.Add(new Point3d(plane.PointAt((rd.NextDouble() - 0.5) * width, (rd.NextDouble() - 0.5) * height)));
+
+                    Vector3d vv = plane.ZAxis;
+                    vv.Unitize();
+                    vv *= velocity;
+                    Vector3d rotA = plane.XAxis;
+
+                    // rotate initial velocity based on random factor
+                    rotA.Rotate(rd.NextDouble() * Math.PI * 2, plane.ZAxis);
+
+                    vv.Rotate((rd.NextDouble() - 0.5) * 2 * randomFactor, rotA);
+
+                    vls.Add(vv);
                 }
-
-                Vector3d vv = plane.ZAxis;
-                vv.Unitize();
-                vv *= velocity;
-                Vector3d rotA = plane.XAxis;
-
-                // rotate initial velocity based on random factor
-                rotA.Rotate(rd.NextDouble() * Math.PI * 2, plane.ZAxis);
-
-                vv.Rotate((rd.NextDouble() - 0.5) * 2 * randomFactor, rotA);
-                vls.Add(vv);
             }
 
             else

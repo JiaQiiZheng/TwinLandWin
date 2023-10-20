@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "lFBD4yrzRwPR93ziT2AF0nnl2r9ppbfZbc7bnwQjqfQnkJ4Wk5flMViqa1CKgo4BcunChofHWG2c4SBHnuZvwA==",
+  "dgSpecHash": "8EYyx6BWHTC/qhTmp0rycmzuf0+jp2fjpfr7Te/T91ZTN1stZDFY22wL7zurpr2Dm79M4QyW5gPnngy2/f5bSw==",
   "success": true,
   "projectFilePath": "D:\\Application Development\\grasshopper development\\TwinLand_win\\TwinLand\\TwinLand.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "C:\\Users\\carle\\.nuget\\packages\\gdal.native\\3.7.1\\gdal.native.3.7.1.nupkg.sha512",
     "C:\\Users\\carle\\.nuget\\packages\\gdal.plugins\\3.7.1\\gdal.plugins.3.7.1.nupkg.sha512",
     "C:\\Users\\carle\\.nuget\\packages\\grasshopper\\7.32.23215.19001\\grasshopper.7.32.23215.19001.nupkg.sha512",
+    "C:\\Users\\carle\\.nuget\\packages\\miconvexhull\\1.1.19.1019\\miconvexhull.1.1.19.1019.nupkg.sha512",
     "C:\\Users\\carle\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\6.0.0\\microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
     "C:\\Users\\carle\\.nuget\\packages\\microsoft.netcore.runtime\\1.0.2-rc2-24027\\microsoft.netcore.runtime.1.0.2-rc2-24027.nupkg.sha512",
     "C:\\Users\\carle\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",

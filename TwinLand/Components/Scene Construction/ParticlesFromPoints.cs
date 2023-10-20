@@ -46,6 +46,8 @@ namespace TwinLand
             pManager[3].Optional = true;
             pManager[4].Optional = true;
             pManager[5].Optional = true;
+
+            pManager[1].DataMapping = GH_DataMapping.Graft;
         }
 
         /// <summary>

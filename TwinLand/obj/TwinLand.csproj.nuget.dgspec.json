@@ -56,6 +56,10 @@
               "target": "Package",
               "version": "[7.32.23215.19001, )"
             },
+            "MIConvexHull": {
+              "target": "Package",
+              "version": "[1.1.19.1019, )"
+            },
             "Microsoft.NETCore.Runtime": {
               "target": "Package",
               "version": "[1.0.2-rc2-24027, )"

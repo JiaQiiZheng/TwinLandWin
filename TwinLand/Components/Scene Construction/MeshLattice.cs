@@ -51,6 +51,11 @@ namespace TwinLand.Components.FleX_Construct
 
             if (!DA.GetDataList("Mesh", meshes)) { return; }
             if (!DA.GetData("Spacing", ref spacing)) { return; }
+            if (spacing <= 0)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Spacing needs to be a positive value.");
+                return;
+            }
             DA.GetData("Strict", ref strict);
 
             // get bounding box

@@ -74,6 +74,19 @@
           "build/net48/Grasshopper.targets": {}
         }
       },
+      "MIConvexHull/1.1.19.1019": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/MIConvexHull.dll": {
+            "related": ".deps.json;.pdb"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/MIConvexHull.dll": {
+            "related": ".deps.json;.pdb"
+          }
+        }
+      },
       "Microsoft.Bcl.AsyncInterfaces/6.0.0": {
         "type": "package",
         "dependencies": {
@@ -770,6 +783,23 @@
         "lib/net48/Grasshopper.xml"
       ]
     },
+    "MIConvexHull/1.1.19.1019": {
+      "sha512": "Qz0BIRVyflj9jMkIKG1tpON5Xz1lFEA9XyRH0Pw5qIsCE75heHF4cHrBr8RqvQJRaaNXH+5jdWAfFP3m3OfTOA==",
+      "type": "package",
+      "path": "miconvexhull/1.1.19.1019",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard1.0/MIConvexHull.deps.json",
+        "lib/netstandard1.0/MIConvexHull.dll",
+        "lib/netstandard1.0/MIConvexHull.pdb",
+        "lib/netstandard2.0/MIConvexHull.deps.json",
+        "lib/netstandard2.0/MIConvexHull.dll",
+        "lib/netstandard2.0/MIConvexHull.pdb",
+        "miconvexhull.1.1.19.1019.nupkg.sha512",
+        "miconvexhull.nuspec"
+      ]
+    },
     "Microsoft.Bcl.AsyncInterfaces/6.0.0": {
       "sha512": "UcSjPsst+DfAdJGVDsu346FX0ci0ah+lw3WRtn18NUwEqRt70HaOQ7lI72vy3+1LxtqI3T5GWwV39rQSrCzAeg==",
       "type": "package",
@@ -1311,6 +1341,7 @@
       "GDAL.Native >= 3.7.1",
       "GDAL.Plugins >= 3.7.1",
       "Grasshopper >= 7.32.23215.19001",
+      "MIConvexHull >= 1.1.19.1019",
       "Microsoft.NETCore.Runtime >= 1.0.2-rc2-24027",
       "Newtonsoft.Json >= 13.0.3",
       "OsmSharp >= 7.0.0-pre022",
@@ -1375,6 +1406,10 @@
           "Grasshopper": {
             "target": "Package",
             "version": "[7.32.23215.19001, )"
+          },
+          "MIConvexHull": {
+            "target": "Package",
+            "version": "[1.1.19.1019, )"
           },
           "Microsoft.NETCore.Runtime": {
             "target": "Package",
