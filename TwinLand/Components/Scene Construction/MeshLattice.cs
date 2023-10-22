@@ -66,6 +66,14 @@ namespace TwinLand.Components.FleX_Construct
                 {
                     bbox.Union(mesh.GetBoundingBox(true));
                 }
+
+                // force spacing not smaller by a certain number to prevent crashing
+                BoundingBox bb = mesh.GetBoundingBox(true);
+                if ((bb.Max.X - bb.Min.X) / spacing > 100)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Spacing is too small for an efficient lattice generation.");
+                    return;
+                }
             }
 
             // calculate box domain

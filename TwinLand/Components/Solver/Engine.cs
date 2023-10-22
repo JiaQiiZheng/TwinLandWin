@@ -174,11 +174,11 @@ namespace TwinLand
                 flex.SetScene(scene);
                 flex.SetSolverOptions(options);
             }
-            
+
             else if (run && flex != null && flex.IsReady())
             {
                 DA.GetData("Solver Options", ref options);
-                if(options.TimeStamp != options_ts)
+                if (options.TimeStamp != options_ts)
                 {
                     flex.SetSolverOptions(options);
                 }
@@ -309,8 +309,8 @@ namespace TwinLand
             }
             DA.SetDataList("Log", log);
         }
-        
-        
+
+
 
         /// <summary>
         /// Provides an Icon for every component that will be visible in the User Interface.

@@ -3,7 +3,7 @@
     "TwinLand": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\Rhino 7\\System\\Rhino.exe",
-      "commandLineArgs": "-nosplash /runscript=\"Grasshopper\""
+      "commandLineArgs": "-nosplash -open \"D:\\UVA study\\8010-IndianaDunes-ResearchStudio\\Modeling\\Rhino\\PublicSand_1017.3dm\" /runscript=\"Grasshopper\""
     }
   }
 }

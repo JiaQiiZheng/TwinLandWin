@@ -117,10 +117,16 @@ namespace TwinLand.Components.FleX_Construct
                 List<double> param_y = new List<double>();
 
                 double step = 1.0 / count;
-                for (int j = 0; j <= count; j++)
+                for (int i = 0; i <= count; i++)
                 {
-                    param_x.Add(-0.5 + j * step);
-                    param_y.Add(-0.5 + j * step);
+                    param_x.Add(-0.5 + i * step);
+                }
+
+                double count_y = height / width * count;
+                double step_y = width / height * step;
+                for (int i = 0; i < count_y; i++)
+                {
+                    param_y.Add(-0.5 + i * step_y);
                 }
 
                 // cross-reference

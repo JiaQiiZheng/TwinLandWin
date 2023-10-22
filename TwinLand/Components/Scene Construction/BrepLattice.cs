@@ -48,6 +48,7 @@ namespace TwinLand.Components.FleX_Construct
         {
             List<Brep> breps = new List<Brep>();
             double spacing = 1.0;
+
             bool strict = true;
 
             if(!DA.GetDataList("Brep", breps)) { return; }
@@ -66,6 +67,14 @@ namespace TwinLand.Components.FleX_Construct
                 if (brep != null)
                 {
                     bbox.Union(brep.GetBoundingBox(true));
+                }
+
+                // force spacing not smaller by a certain number to prevent crashing
+                BoundingBox bb = brep.GetBoundingBox(true);
+                if ((bb.Max.X - bb.Min.X)/spacing > 100)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Spacing is too small for an efficient lattice generation.");
+                    return;
                 }
             }
 
