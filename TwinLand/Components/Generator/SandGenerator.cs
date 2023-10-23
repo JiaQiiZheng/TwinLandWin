@@ -38,6 +38,7 @@ namespace TwinLand.Components.Generator
 
             pManager.AddIntegerParameter("Vertex Count", "vertex count", "", GH_ParamAccess.item, 6);
             pManager.AddNumberParameter("Size Even Factor", "size even factor", "", GH_ParamAccess.item, 1.0);
+            pManager.AddGenericParameter("TwinLand Particle", "TL particle", "", GH_ParamAccess.item);
         }
 
         /// <summary>

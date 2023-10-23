@@ -51,16 +51,15 @@ namespace TwinLand.Components.Helper
             if (reset)
             {
                 dataTree.Clear();
+                return;
             }
-            else
+
+            for (int i = 0; i < data.PathCount; i++)
             {
-                for (int i = 0; i < data.PathCount; i++)
+                var list = data.get_Branch(i);
+                for (int j = 0; j < list.Count; j++)
                 {
-                    var list = data.get_Branch(i);
-                    for (int j = 0; j < list.Count; j++)
-                    {
-                        dataTree.Append((IGH_Goo)list[j], new GH_Path(i, j));
-                    }
+                    dataTree.Append((IGH_Goo)list[j], new GH_Path(i, j));
                 }
             }
 

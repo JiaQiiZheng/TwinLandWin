@@ -33,13 +33,13 @@ namespace TwinLand.Components.Scene_Configuration
             pManager.AddPlaneParameter("Plane", "plane", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("Wind Tunnel Width", "wind tunnel width", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("Wind Tunnel Height", "wind tunnel height", "", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Wind Tunnel Radius", "wind tunnel radius", "Only apply radius when wind tunnel shape set to round", GH_ParamAccess.item);
+            //pManager.AddNumberParameter("Wind Tunnel Radius", "wind tunnel radius", "Only apply radius when wind tunnel shape set to round", GH_ParamAccess.item);
             pManager.AddIntegerParameter("Wind Centroid Density", "wind centroid density", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("Force Field Radius", "force field radius", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("Wind Force Strength", "wind force strength", "", GH_ParamAccess.item);
             pManager.AddMeshParameter("Topography Mesh", "topography mesh", "", GH_ParamAccess.list);
             pManager.AddGeometryParameter("Obstacles", "obstacles", "", GH_ParamAccess.list);
-            pManager.AddBooleanParameter("Wind Tunnel Round Shape On", "wind tunnel round shape on", "", GH_ParamAccess.item, false);
+            //pManager.AddBooleanParameter("Wind Tunnel Round Shape On", "wind tunnel round shape on", "", GH_ParamAccess.item, false);
             pManager.AddIntegerParameter("Mode", "mode", "0: Constant Force, 1: Impulse, 2: Velocity Change", GH_ParamAccess.item, 0);
             pManager.AddBooleanParameter("Linear Descent Off", "linear descent off ", "", GH_ParamAccess.item, true);
             pManager.AddBooleanParameter("Force Field Display", "force field display", "", GH_ParamAccess.item, true);
@@ -52,6 +52,7 @@ namespace TwinLand.Components.Scene_Configuration
                 if (optionalParams.Contains(pManager[i].Name))
                 {
                     pManager[i].Optional = true;
+                    pManager[i].DataMapping = GH_DataMapping.Flatten;
                 }
             }
         }
@@ -90,7 +91,7 @@ namespace TwinLand.Components.Scene_Configuration
             Point3d[] pt_lowest = null;
             List<IGH_GeometricGoo> obstacles = new List<IGH_GeometricGoo>();
 
-            bool roundTunnel = false;
+            //bool roundTunnel = false;
             int mode = 0;
             bool linearOff = true;
             bool displayOn = true;
@@ -104,7 +105,7 @@ namespace TwinLand.Components.Scene_Configuration
 
             DA.GetData("Wind Tunnel Width", ref width);
             DA.GetData("Wind Tunnel Height", ref height);
-            DA.GetData("Wind Tunnel Radius", ref radius);
+            //DA.GetData("Wind Tunnel Radius", ref radius);
             DA.GetData("Force Field Radius", ref ff_radius);
             DA.GetData("Wind Centroid Density", ref density);
 
@@ -126,16 +127,23 @@ namespace TwinLand.Components.Scene_Configuration
                     GH_Brep gh_brep = obs as GH_Brep;
                     obstacle_brep_list.Add(gh_brep.Value);
                 }
+                else if (obs.GetType().Name == "GH_Box")
+                {
+                    GH_Box box = obs as GH_Box;
+                    GH_Brep convertToBrep = new GH_Brep(Brep.CreateFromBox(box.Value));
+                    obstacle_brep_list.Add(convertToBrep.Value);
+                }
                 else if (obs.GetType().Name == "GH_Mesh")
                 {
                     GH_Mesh gh_mesh = obs as GH_Mesh;
                     obstacle_mesh_list.Add(gh_mesh.Value);
                 }
+
             }
             obstacle_breps = obstacle_brep_list.ToArray();
             obstacle_meshes = obstacle_mesh_list.ToArray();
 
-            DA.GetData("Wind Tunnel Round Shape On", ref roundTunnel);
+            //DA.GetData("Wind Tunnel Round Shape On", ref roundTunnel);
             DA.GetData("Mode", ref mode);
             DA.GetData("Linear Descent Off", ref linearOff);
 
@@ -150,7 +158,7 @@ namespace TwinLand.Components.Scene_Configuration
             List<Point3d> pts = new List<Point3d>();
             int w_count = density;
             int h_count = (int)(height / width * w_count);
-            
+
             for (int i = 0; i <= w_count; i++)
             {
                 double param_w = i / (double)w_count;
@@ -173,11 +181,11 @@ namespace TwinLand.Components.Scene_Configuration
                     pt_hits_obstacle_mesh = Intersection.ProjectPointsToMeshes(obstacle_meshes, pt_origin, plane.Normal, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
 
                     // Initial collecton of pt_hits
-                    int topoCount =pt_hits_topo!= null ? pt_hits_topo.Length : 0;
+                    int topoCount = pt_hits_topo != null ? pt_hits_topo.Length : 0;
                     int brepCount = pt_hits_obstacle_brep != null ? pt_hits_obstacle_brep.Length : 0;
-                    int meshCount = pt_hits_obstacle_mesh!=null ? pt_hits_obstacle_mesh.Length : 0;
+                    int meshCount = pt_hits_obstacle_mesh != null ? pt_hits_obstacle_mesh.Length : 0;
 
-                    Point3d[] pt_hits = new Point3d[topoCount+brepCount+meshCount];
+                    Point3d[] pt_hits = new Point3d[topoCount + brepCount + meshCount];
                     // merge all pt_hits together
                     if (pt_hits_topo != null)
                     {
@@ -196,6 +204,11 @@ namespace TwinLand.Components.Scene_Configuration
                     // Check if pt is under Mesh
                     pt_lowest = Intersection.ProjectPointsToMeshes(topos, pt_origin, new Vector3d(0, 0, -1), RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
                     double minZ = double.MinValue;
+                    if (pt_lowest == null)
+                    {
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Wind tunnel is not above topography mesh or topography mesh not being set yet.");
+                        return;
+                    }
                     foreach (var low_hit in pt_lowest)
                     {
                         minZ = Math.Max(minZ, low_hit.Z);
@@ -205,7 +218,7 @@ namespace TwinLand.Components.Scene_Configuration
                     bool insideObstacle = false;
                     foreach (Brep b in obstacle_breps)
                     {
-                        if(b.IsPointInside(pt, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance, true))
+                        if (b.IsPointInside(pt, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance, true))
                         {
                             insideObstacle = true;
                         }
