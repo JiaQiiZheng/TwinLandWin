@@ -6,7 +6,6 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Rhino;
 using Rhino.Geometry;
-using static Rhino.DocObjects.PhysicallyBasedMaterial;
 
 namespace TwinLand.Components.FleX_Construct
 {
@@ -48,6 +47,7 @@ namespace TwinLand.Components.FleX_Construct
             List<Mesh> meshes = new List<Mesh>();
             double spacing = 1.0;
             bool strict = true;
+            int maxCountPerAxis = 100;
 
             if (!DA.GetDataList("Mesh", meshes)) { return; }
             if (!DA.GetData("Spacing", ref spacing)) { return; }
@@ -66,14 +66,6 @@ namespace TwinLand.Components.FleX_Construct
                 {
                     bbox.Union(mesh.GetBoundingBox(true));
                 }
-
-                // force spacing not smaller by a certain number to prevent crashing
-                BoundingBox bb = mesh.GetBoundingBox(true);
-                if ((bb.Max.X - bb.Min.X) / spacing > 100)
-                {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Spacing is too small for an efficient lattice generation.");
-                    return;
-                }
             }
 
             // calculate box domain
@@ -88,6 +80,13 @@ namespace TwinLand.Components.FleX_Construct
             int x_count = (int)Math.Ceiling(x_domain.Length / spacing);
             int y_count = (int)Math.Ceiling(y_domain.Length / spacing);
             int z_count = (int)Math.Ceiling(z_domain.Length / spacing);
+
+            // force spacing not smaller by a certain number to prevent crashing
+            if (x_count > maxCountPerAxis || y_count > maxCountPerAxis || z_count > maxCountPerAxis)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Spacing is too small for an efficient lattice generation.");
+                return;
+            }
 
             // get x y z list for points
             List<double> xs = CollectXYZ(x_domain.Min, x_count, spacing);
