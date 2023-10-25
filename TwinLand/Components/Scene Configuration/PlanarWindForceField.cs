@@ -36,7 +36,7 @@ namespace TwinLand.Components.Scene_Configuration
             //pManager.AddNumberParameter("Wind Tunnel Radius", "wind tunnel radius", "Only apply radius when wind tunnel shape set to round", GH_ParamAccess.item);
             pManager.AddIntegerParameter("Wind Centroid Density", "wind centroid density", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("Force Field Radius", "force field radius", "", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Wind Force Strength", "wind force strength", "", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Wind Force Strength", "wind force strength", "This parameter is meter/s", GH_ParamAccess.item);
             pManager.AddMeshParameter("Topography Mesh", "topography mesh", "", GH_ParamAccess.list);
             pManager.AddGeometryParameter("Obstacles", "obstacles", "", GH_ParamAccess.list);
             //pManager.AddBooleanParameter("Wind Tunnel Round Shape On", "wind tunnel round shape on", "", GH_ParamAccess.item, false);

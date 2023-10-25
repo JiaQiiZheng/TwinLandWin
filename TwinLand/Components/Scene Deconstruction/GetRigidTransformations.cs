@@ -7,6 +7,9 @@ using Rhino.Geometry;
 using FlexCLI;
 using System.Xml;
 using System.Diagnostics;
+using Grasshopper.Kernel.Types;
+using Rhino.Commands;
+using System.Windows.Forms.VisualStyles;
 
 namespace TwinLand.Components.Scene_Deconstruction
 {
@@ -27,6 +30,10 @@ namespace TwinLand.Components.Scene_Deconstruction
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("FleX", "FleX", "", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Output Mesh", "output mesh", "", GH_ParamAccess.item, false);
+            pManager.AddGeometryParameter("Mesh", "mesh", "", GH_ParamAccess.list);
+
+            pManager[2].Optional = true;
         }
 
         /// <summary>
@@ -38,6 +45,7 @@ namespace TwinLand.Components.Scene_Deconstruction
             pManager.AddVectorParameter("Rotation Axis", "rotation axis", "", GH_ParamAccess.list);
             pManager.AddNumberParameter("Rotation Angles", "rotation angles", "", GH_ParamAccess.list);
             pManager.AddTransformParameter("Transformations", "transformations", "", GH_ParamAccess.list);
+            pManager.AddMeshParameter("Mesh", "mesh", "", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -47,8 +55,12 @@ namespace TwinLand.Components.Scene_Deconstruction
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Flex flex = null;
+            bool outputMesh = false;
 
             if (!DA.GetData("FleX", ref flex)) { return; }
+            DA.GetData("Output Mesh", ref outputMesh);
+            List<Mesh> geos = new List<Mesh>();
+            DA.GetDataList("Mesh", geos);
 
             List<Vector3d> translations = new List<Vector3d>();
             List<Vector3d> rotateAxis = new List<Vector3d>();
@@ -61,42 +73,90 @@ namespace TwinLand.Components.Scene_Deconstruction
                 List<float> trans = flex.Scene.GetRigidTranslations();
                 List<float> massCenters = flex.Scene.GetShapeMassCenters();
 
-                for (int i = 0; i < massCenters.Count / 3; i++)
+                int round = massCenters.Count / 3;
+
+                if (outputMesh && geos.Count == round)
                 {
-                    double center_X = massCenters[i * 3];
-                    double center_Y = massCenters[i * 3 + 1];
-                    double center_Z = massCenters[i * 3 + 2];
-
-                    translations.Add(new Vector3d(trans[i * 3] - center_X, trans[i * 3 + 1] - center_Y, trans[i * 3 + 2] - center_Z));
-
-                    Vector3d rotationAxis = Vector3d.ZAxis;
-                    double halfAngle = Math.Acos(rot[i * 4 + 3]);
-                    double X = rot[i * 4] / Math.Sin(halfAngle);
-                    double Y = rot[i * 4 + 1] / Math.Sin(halfAngle);
-                    double Z = rot[i * 4 + 2] / Math.Sin(halfAngle);
-                    if(HasValidValue(X) && HasValidValue(Y) && HasValidValue(Z))
+                    for (int i = 0; i < round; i++)
                     {
-                        rotationAxis = new Vector3d(X, Y, Z);
+                        double center_X = massCenters[i * 3];
+                        double center_Y = massCenters[i * 3 + 1];
+                        double center_Z = massCenters[i * 3 + 2];
+
+                        translations.Add(new Vector3d(trans[i * 3] - center_X, trans[i * 3 + 1] - center_Y, trans[i * 3 + 2] - center_Z));
+
+                        Vector3d rotationAxis = Vector3d.ZAxis;
+                        double halfAngle = Math.Acos(rot[i * 4 + 3]);
+                        double X = rot[i * 4] / Math.Sin(halfAngle);
+                        double Y = rot[i * 4 + 1] / Math.Sin(halfAngle);
+                        double Z = rot[i * 4 + 2] / Math.Sin(halfAngle);
+                        if (HasValidValue(X) && HasValidValue(Y) && HasValidValue(Z))
+                        {
+                            rotationAxis = new Vector3d(X, Y, Z);
+                        }
+
+                        double angle = 2 * halfAngle;
+
+                        Transform translation = Transform.Translation(translations[i]);
+                        Transform rotation = Transform.Rotation(angle, rotationAxis, new Point3d(center_X, center_Y, center_Z));
+
+                        Transform t = translation * rotation;
+
+                        rotateAxis.Add(rotationAxis);
+                        rotateAngles.Add(angle);
+                        transformations.Add(t);
+
+                        // output transformed geometry
+                        geos[i].Transform(t);
                     }
+                }
 
-                    double angle = 2 * halfAngle;
+                else
+                {
+                    for (int i = 0; i < round; i++)
+                    {
+                        double center_X = massCenters[i * 3];
+                        double center_Y = massCenters[i * 3 + 1];
+                        double center_Z = massCenters[i * 3 + 2];
 
-                    Transform translation = Transform.Translation(translations[i]);
-                    Transform rotation = Transform.Rotation(angle, rotationAxis, new Point3d(center_X, center_Y, center_Z));
+                        translations.Add(new Vector3d(trans[i * 3] - center_X, trans[i * 3 + 1] - center_Y, trans[i * 3 + 2] - center_Z));
 
-                    Transform t = translation * rotation;
+                        Vector3d rotationAxis = Vector3d.ZAxis;
+                        double halfAngle = Math.Acos(rot[i * 4 + 3]);
+                        double X = rot[i * 4] / Math.Sin(halfAngle);
+                        double Y = rot[i * 4 + 1] / Math.Sin(halfAngle);
+                        double Z = rot[i * 4 + 2] / Math.Sin(halfAngle);
+                        if (HasValidValue(X) && HasValidValue(Y) && HasValidValue(Z))
+                        {
+                            rotationAxis = new Vector3d(X, Y, Z);
+                        }
 
-                    rotateAxis.Add(rotationAxis);
-                    rotateAngles.Add(angle);
-                    transformations.Add(t);
+                        double angle = 2 * halfAngle;
+
+                        Transform translation = Transform.Translation(translations[i]);
+                        Transform rotation = Transform.Rotation(angle, rotationAxis, new Point3d(center_X, center_Y, center_Z));
+
+                        Transform t = translation * rotation;
+
+                        rotateAxis.Add(rotationAxis);
+                        rotateAngles.Add(angle);
+                        transformations.Add(t);
+                    }
                 }
             }
+
 
             DA.SetDataList("Translations", translations);
             DA.SetDataList("Rotation Axis", rotateAxis);
             DA.SetDataList("Rotation Angles", rotateAngles);
             DA.SetDataList("Transformations", transformations);
+
+            DA.SetDataList("Mesh", geos);
         }
+
+        /// <summary>
+        /// Dynamic variables
+        /// </summary>
 
         public static bool HasValidValue(double value)
         {
