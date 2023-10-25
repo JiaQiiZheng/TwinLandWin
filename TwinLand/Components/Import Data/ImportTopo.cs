@@ -52,7 +52,8 @@ namespace TwinLand
             pManager.AddCurveParameter("Boundary", "boundary", "Boundary for cropping the DEM file",
                 GH_ParamAccess.list);
             pManager.AddTextParameter("DEM", "DEM", "The full file path of downloaded DEM file", GH_ParamAccess.item);
-            
+            pManager.AddTextParameter("Spatial Reference System", "customSRS", "Customize your Spatial Reference System by standard SRS label", GH_ParamAccess.item, "WGS84");
+
             pManager[0].Optional = true;
         }
 
@@ -81,6 +82,9 @@ namespace TwinLand
             string filePath = String.Empty;
             DA.GetData<String>("DEM", ref filePath);
 
+            string SRS_code = String.Empty;
+            DA.GetData<String>("Spatial Reference System", ref SRS_code);
+
             RESTful.GdalConfiguration.ConfigureGdal();
             OSGeo.GDAL.Gdal.AllRegister();
 
@@ -98,26 +102,29 @@ namespace TwinLand
             List<string> infoOptions = new List<string> { "-stats" };
             demInfo = Gdal.GDALInfo(dataSource, new GDALInfoOptions(infoOptions.ToArray()));
 
-            // Get Spatial Reference System (SRS) from DEM file, if not valid, set to WGS84
-            OSGeo.OSR.SpatialReference CRS = new SpatialReference(Osr.SRS_WKT_WGS84_LAT_LONG);
+            // Get Spatial Reference System (SRS) from DEM file, if not valid, set to customSRS, default is WGS84
+            OSGeo.OSR.SpatialReference customSRS = new SpatialReference("");
+            customSRS.SetFromUserInput(SRS_code);
+            int userSRSInt = Int16.Parse(customSRS.GetAuthorityCode(null));
+
             if (dataSource.GetProjection() == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-                    "DEM coordinate reference system is missing, automatically set to WGS84");
+                    "DEM coordinate reference system is missing, automatically set to customSRS, default is WGS84");
             }
             else
             {
-                CRS = new SpatialReference(dataSource.GetProjection());
+                customSRS = new SpatialReference(dataSource.GetProjection());
 
-                if (CRS.Validate() != 0)
+                if (customSRS.Validate() != 0)
                 {
                     // Check if SRS needs to be converted from ESRI format to WKT
-                    SpatialReference CRS_ESRI = CRS;
+                    SpatialReference CRS_ESRI = customSRS;
                     CRS_ESRI.MorphFromESRI();
                     string proj_ESRI = string.Empty;
                     CRS_ESRI.ExportToWkt(out proj_ESRI, null);
 
-                    // if CRS is not valid, use Ground Control Point from DEM file
+                    // if customSRS is not valid, use Ground Control Point from DEM file
                     SpatialReference CRS_GCP = new SpatialReference(dataSource.GetGCPProjection());
                     string proj_GCP = string.Empty;
                     CRS_GCP.ExportToWkt(out proj_GCP, null);
@@ -125,7 +132,7 @@ namespace TwinLand
                     if (!string.IsNullOrEmpty(proj_ESRI))
                     {
                         dataSource.SetProjection(proj_ESRI);
-                        CRS = CRS_ESRI;
+                        customSRS = CRS_ESRI;
                         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
                             "Spatial Reference System (SRS) morphed from ESRI format.");
                     }
@@ -133,30 +140,32 @@ namespace TwinLand
                     else if (!string.IsNullOrEmpty(proj_GCP))
                     {
                         dataSource.SetProjection(proj_GCP);
-                        CRS = CRS_GCP;
+                        customSRS = CRS_GCP;
                         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
                             "Spatial Reference System (SRS) was set from Ground Control Point (GCP) based on DEM file");
                     }
 
                     else
                     {
-                        CRS.SetWellKnownGeogCS("WGS84");
+                        customSRS.SetWellKnownGeogCS(SRS_code);
                         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-                            "Spatial Reference System (SRS) is not valid from DEM file, automatically set to WGS84");
+                            "Spatial Reference System (SRS) is not valid from DEM file, automatically set to customSRS, default is WGS84");
                     }
                 }
 
                 else
                 {
+                    //AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
+                    //    $"DEM SRS - EPSG: {customSRS.GetAttrValue("AUTHORITY", 1)}");
                     AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-                        $"DEM SRS - EPSG: {CRS.GetAttrValue("AUTHORITY", 1)}");
+                        $"DEM SRS - EPSG: {userSRSInt}");
                 }
             } // end of setting SRS
 
             OSGeo.OSR.SpatialReference dst = new OSGeo.OSR.SpatialReference("");
             dst.SetWellKnownGeogCS("WGS84");
-            OSGeo.OSR.CoordinateTransformation coordTransform = new OSGeo.OSR.CoordinateTransformation(CRS, dst);
-            OSGeo.OSR.CoordinateTransformation revTransform = new OSGeo.OSR.CoordinateTransformation(dst, CRS);
+            OSGeo.OSR.CoordinateTransformation coordTransform = new OSGeo.OSR.CoordinateTransformation(customSRS, dst);
+            OSGeo.OSR.CoordinateTransformation revTransform = new OSGeo.OSR.CoordinateTransformation(dst, customSRS);
 
             double[] adfGeoTransform = new double[6];
             double[] invTransform = new double[6];

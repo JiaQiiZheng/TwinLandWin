@@ -47,7 +47,7 @@ namespace TwinLand
               GH_ParamAccess.item);
             pManager.AddTextParameter("OverpassQueryLanguage", "overpassQL",
               "Code applying onto OpenStreetMap data fetching process", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("Run", "run", "Start to download", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("Start Download", "start download", "Start to download", GH_ParamAccess.item, false);
 
             pManager[0].Optional = true;
             pManager[2].Optional = true;
@@ -106,7 +106,7 @@ namespace TwinLand
             DA.GetData("OverpassQueryLanguage", ref overpassQL);
 
             bool run = false;
-            if (!DA.GetData("Run", ref run)) return;
+            if (!DA.GetData("Start Download", ref run)) return;
 
             int timeout = 60;
 

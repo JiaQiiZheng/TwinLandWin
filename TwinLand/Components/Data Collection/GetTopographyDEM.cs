@@ -13,6 +13,10 @@ using Grasshopper.Kernel.Types;
 using Newtonsoft.Json.Linq;
 using Rhino;
 using Rhino.Geometry;
+using System.Security;
+using System.Diagnostics;
+using OSGeo.OGR;
+using OSGeo.GDAL;
 
 namespace TwinLand
 {
@@ -40,11 +44,12 @@ namespace TwinLand
             pManager.AddTextParameter("TargetFolder", "targetFolder",
               "The target folder used to place the downloaded DEM file", GH_ParamAccess.item, Path.GetTempPath());
             pManager.AddTextParameter("FileName", "fileName", "The file name of downloaded DEM file", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("Run", "run", "Start to download the DEM file from the server", GH_ParamAccess.item, false);
+            pManager.AddTextParameter("Spatial Reference System", "customSRS", "Customize your Spatial Reference System by standard SRS label", GH_ParamAccess.item, "WGS84");
+            pManager.AddBooleanParameter("Start Download", "start download", "Start to download the DEM file from the server", GH_ParamAccess.item, false);
 
             pManager[2].Optional = true;
 
-            Message = source_DEM;
+            Message = GetMessage(dynamicMessage); ;
         }
 
         /// <summary>
@@ -67,6 +72,9 @@ namespace TwinLand
             List<Curve> boundary = new List<Curve>();
             DA.GetDataList<Curve>("Boundary", boundary);
 
+            int resolution = resolutionValue;
+            string resolutionLabel = resolutionLevel;
+
             string folderPath = string.Empty;
             DA.GetData("TargetFolder", ref folderPath);
             if (Helper.isWindows && !folderPath.EndsWith(@"\"))
@@ -85,11 +93,32 @@ namespace TwinLand
                 fileName = source_DEM;
             }
 
+            string SRS_code = String.Empty;
+            DA.GetData<String>("Spatial Reference System", ref SRS_code);
+
             bool run = false;
-            DA.GetData("Run", ref run);
+            DA.GetData("Start Download", ref run);
+
+            //// configure download DEM size
+            //string size = string.Empty;
+            //string sizeLabel = string.Empty;
+            //if(resolution != 0 && resolutionLabel != string.Empty)
+            //{
+            //    size = "&size=" + resolution + "%2C" + resolution;
+            //}
 
             GH_Structure<GH_String> demList = new GH_Structure<GH_String>();
             GH_Structure<GH_String> demQuery = new GH_Structure<GH_String>();
+
+            ///GDAL setup
+            RESTful.GdalConfiguration.ConfigureOgr();
+
+            // Initial SRS instance from GDAL
+            OSGeo.OSR.SpatialReference customSRS = new OSGeo.OSR.SpatialReference("");
+            customSRS.SetFromUserInput(SRS_code);
+            int userSRSInt = Int16.Parse(customSRS.GetAuthorityCode(null));
+
+            Debug.WriteLine(userSRSInt);
 
             for (int i = 0; i < boundary.Count; i++)
             {
@@ -113,7 +142,16 @@ namespace TwinLand
                 double right = max.X;
                 double top = max.Y;
 
-                string topoQuery = String.Format(dem_url, left, bottom, right, top);
+                // Complete query url with resolution setting
+                string topoQuery = String.Empty;
+                if (source_DEM.Equals("USGS"))
+                {
+                    topoQuery = String.Format(dem_url, left, bottom, right, top, resolution, resolution, userSRSInt);
+                }
+                else if (source_DEM.Equals("GMRT"))
+                {
+                    topoQuery = String.Format(dem_url, left, bottom, right, top, resolutionLabel);
+                }
 
                 // prepare fileFullPath for download or load purpose
                 string fileFullPath = $"{folderPath}{fileName}_{i}.tif";
@@ -133,6 +171,66 @@ namespace TwinLand
             DA.SetDataTree(1, demQuery);
         }
 
+        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+        {
+            if (string.IsNullOrEmpty(sourceList_DEM))
+            {
+                sourceList_DEM = TwinLand.Convert.GetEndpoints();
+            }
+
+            //// This only use single level of list
+            //foreach (var service in sourceJson["REST Topo"])
+            //{
+            //    string sName = service["service"].ToString();
+
+            //    ToolStripMenuItem serviceItem = new ToolStripMenuItem(sName);
+            //    serviceItem.Tag = sName;
+            //    serviceItem.Checked = IsServiceSelected(sName);
+            //    serviceItem.ToolTipText = service["description"].ToString();
+            //    serviceItem.Click += ServiceItemOnClicks;
+
+            //    menu.Items.Add(serviceItem);
+            //}
+
+            // Create DEM service menu
+            ToolStripMenuItem root_service = new ToolStripMenuItem("Select Service");
+
+            foreach (var source in sourceJson["REST Topo"])
+            {
+                string serviceName = source["service"].ToString();
+                ToolStripMenuItem serviceItem = new ToolStripMenuItem(serviceName);
+                serviceItem.Tag = serviceName;
+                serviceItem.Checked = IsServiceSelected(serviceName);
+                serviceItem.ToolTipText = source["description"].ToString();
+                serviceItem.Click += ServiceItemOnClicks;
+
+                root_service.DropDownItems.Add(serviceItem);
+            }
+
+            // Create resolution menu
+            ToolStripMenuItem root_resolution = new ToolStripMenuItem("Select DEM Resolution");
+
+            foreach (var resolution in sourceJson["Raster Resolution"])
+            {
+                string resolutionLevel = resolution["level"].ToString();
+                string resolutionValue = resolution["resolution"].ToString();
+
+                ToolStripMenuItem resolutionItem = new ToolStripMenuItem(resolutionLevel);
+                resolutionItem.Tag = resolutionLevel;
+                resolutionItem.Checked = IsResolutionSelected(resolutionValue);
+                resolutionItem.ToolTipText = resolution["description"].ToString();
+                resolutionItem.Click += ResolutionOnClick;
+
+                root_resolution.DropDownItems.Add(resolutionItem);
+            }
+
+            // Append items onto menu in component
+            menu.Items.Add(root_service);
+            menu.Items.Add(root_resolution);
+
+            base.AppendAdditionalComponentMenuItems(menu);
+        }
+
         /// <summary>
         /// additional menu items
         /// </summary>
@@ -143,28 +241,9 @@ namespace TwinLand
             return serviceString.Equals(source_DEM);
         }
 
-        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+        private bool IsResolutionSelected(string selectedValue)
         {
-            if (string.IsNullOrEmpty(sourceList_DEM))
-            {
-                sourceList_DEM = TwinLand.Convert.GetEndpoints();
-            }
-
-            JObject jsonSourceObject = JObject.Parse(sourceList_DEM);
-            foreach (var service in jsonSourceObject["REST Topo"])
-            {
-                string sName = service["service"].ToString();
-
-                ToolStripMenuItem serviceItem = new ToolStripMenuItem(sName);
-                serviceItem.Tag = sName;
-                serviceItem.Checked = IsServiceSelected(sName);
-                serviceItem.ToolTipText = service["description"].ToString();
-                serviceItem.Click += ServiceItemOnClicks;
-
-                menu.Items.Add(serviceItem);
-            }
-
-            base.AppendAdditionalComponentMenuItems(menu);
+            return selectedValue.Equals(resolutionValue.ToString());
         }
 
         private void ServiceItemOnClicks(object sender, EventArgs e)
@@ -172,26 +251,58 @@ namespace TwinLand
             ToolStripMenuItem item = sender as ToolStripMenuItem;
             if (item == null) return;
 
-            string code = (string)item.Tag;
-            if (IsServiceSelected(code)) { return; }
+            string label = (string)item.Tag;
+            if (IsServiceSelected(label)) { return; }
 
             RecordUndoEvent("source_DEM");
 
-            source_DEM = code;
+            source_DEM = label;
             //TODO. study more about JSONPath expression.
             dem_url = JObject.Parse(SourceList_DEM)["REST Topo"].SelectToken("[?(@.service == '" + Source_DEM + "')].url").ToString();
-            Message = source_DEM;
+            dynamicMessage[0] = label;
+            Message = GetMessage(dynamicMessage); ;
+
+            ExpireSolution(true);
+        }
+        
+        private void ResolutionOnClick(object sender, EventArgs eventArgs)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item == null) return;
+            string label = (string)item.Tag;
+            if (IsResolutionSelected(label)) return;
+
+            RecordUndoEvent("Resolution Level");
+            RecordUndoEvent("Resolution Value");
+
+            string resolutionValueString = sourceJson["Raster Resolution"].SelectToken("[?(@.level == '" + resolutionLevel + "')].resolution").ToString();
+            resolutionLevel = label;
+            resolutionValue = Int32.Parse(resolutionValueString);
+            dynamicMessage[1] = resolutionLevel;
+            Message = GetMessage(dynamicMessage);
 
             ExpireSolution(true);
         }
 
+        private string GetMessage(string[] messageInfo)
+        {
+            string message = "DEM service: " + messageInfo[0] + ", " + "DEM Resolution: " + messageInfo[1];
+            return message;
+        }
 
         /// <summary>
         /// Dynamic Variables
         /// </summary>
         private string sourceList_DEM = TwinLand.Convert.GetEndpoints();
-        private string source_DEM = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][2]["service"].ToString();
-        private string dem_url = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][2]["url"].ToString();
+        private JObject sourceJson = JObject.Parse(TwinLand.Convert.GetEndpoints());
+        private string source_DEM = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString();
+        private string dem_url = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["url"].ToString();
+
+        private string resolutionLevel = "high";
+        private int resolutionValue = 1024;
+
+        // dynamic message in component
+        private string[] dynamicMessage = new string[2] { JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString(), "high" };
 
         public string SourceList_DEM
         {
@@ -205,7 +316,7 @@ namespace TwinLand
             set
             {
                 source_DEM = value;
-                Message = source_DEM;
+                Message = GetMessage(dynamicMessage);
             }
         }
 

@@ -57,11 +57,11 @@ namespace TwinLand
             pManager.AddTextParameter("FolderPath", "folderPath", "Target folder for saving raster images", GH_ParamAccess.item, Path.GetTempPath());
             pManager.AddTextParameter("FileName", "fileName", "File name of downloaded images", GH_ParamAccess.item, "restRaster");
             //pManager.AddTextParameter("ServiceURL", "serviceURL", "ArcGIS REST Service website to query. Use the component \nmenu item \"Create REST Raster Source List\" for some examples.", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("Get", "get", "Start to download raster image data from the REST server", GH_ParamAccess.item, false);
 
             // optional(preset) input
-            pManager.AddTextParameter("Spatial Reference System", "customSRS", "Customize your Spatial Reference System by standard SRS code", GH_ParamAccess.item, "WGS84");
+            pManager.AddTextParameter("Spatial Reference System", "customSRS", "Customize your Spatial Reference System by standard SRS label", GH_ParamAccess.item, "WGS84");
             pManager.AddTextParameter("ImageType", "imageType", "Set image type for the request to the REST server", GH_ParamAccess.item, "jpg");
+            pManager.AddBooleanParameter("Start Download", "start download", "Start to download raster image data from the REST server", GH_ParamAccess.item, false);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -101,7 +101,7 @@ namespace TwinLand
             string serviceURL = rasterURL;
 
             bool run = false;
-            DA.GetData<bool>("Get", ref run);
+            DA.GetData<bool>("Start Download", ref run);
 
             string SRS_code = string.Empty;
             DA.GetData<string>("Spatial Reference System", ref SRS_code);
@@ -183,13 +183,14 @@ namespace TwinLand
                     jObj = JsonConvert.DeserializeObject<JObject>(result);
                 }
 
+                // Prepare rectangle
+                Point3d extMin = new Point3d((double)jObj["extent"]["xmin"], (double)jObj["extent"]["ymin"], 0);
+                Point3d extMax = new Point3d((double)jObj["extent"]["xmax"], (double)jObj["extent"]["ymax"], 0);
+                rect = new Rectangle3d(Plane.WorldXY, extMin, extMax);
+                rect.Transform(userSRSToModelTransform);
+
                 if (run)
                 {
-                    Point3d extMin = new Point3d((double)jObj["extent"]["xmin"], (double)jObj["extent"]["ymin"], 0);
-                    Point3d extMax = new Point3d((double)jObj["extent"]["xmax"], (double)jObj["extent"]["ymax"], 0);
-                    rect = new Rectangle3d(Plane.WorldXY, extMin, extMax);
-                    rect.Transform(userSRSToModelTransform);
-
                     ///Download image from source
                     ///Catch if JSON query throws an error
                     string imageQueryJSON = jObj["href"].ToString();
@@ -215,11 +216,11 @@ namespace TwinLand
                             webC.Dispose();
                         }
                     }
-
                 }
+
                 var bitmapPath = folderPath + fileName + "_" + i + "." + imageType;
                 mapList.Append(new GH_String(bitmapPath), path);
-
+                
                 imgFrame.Append(new GH_Rectangle(rect), path);
                 AddPreviewItem(bitmapPath, rect);
             }
@@ -326,10 +327,11 @@ namespace TwinLand
             foreach (var resolution in sourceJson["Raster Resolution"])
             {
                 string resolutionString = resolution["level"].ToString();
+                string resolutionValue = resolution["resolution"].ToString();
 
                 ToolStripMenuItem resolutionItem = new ToolStripMenuItem(resolutionString);
                 resolutionItem.Tag = resolutionString;
-                resolutionItem.Checked = IsResolutionSelected(resolutionString);
+                resolutionItem.Checked = IsResolutionSelected(resolutionValue);
                 resolutionItem.ToolTipText = resolution["description"].ToString();
                 resolutionItem.Click += ResolutionOnClick;
 
@@ -348,9 +350,9 @@ namespace TwinLand
             return serviceString.Equals(rasterSource);
         }
 
-        private bool IsResolutionSelected(string resolutionString)
+        private bool IsResolutionSelected(string selectedValue)
         {
-            return resolutionString.Equals(resolutionValue);
+            return selectedValue.Equals(resolutionValue.ToString());
         }
 
 
@@ -358,15 +360,15 @@ namespace TwinLand
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
             if (item == null) return;
-            string code = (string)item.Tag;
-            if (IsRasterServiceSelected(code)) return;
+            string label = (string)item.Tag;
+            if (IsRasterServiceSelected(label)) return;
 
             RecordUndoEvent("Raster Source");
             RecordUndoEvent("Raster URL");
 
-            rasterSource = code;
+            rasterSource = label;
             rasterURL = sourceJson["REST Raster"].SelectToken("[?(@.service == '" + rasterSource + "')].url").ToString();
-            dynamicMessage[0] = code;
+            dynamicMessage[0] = label;
             Message = GetMessage(dynamicMessage);
 
             ExpireSolution(true);
@@ -376,13 +378,13 @@ namespace TwinLand
         {
             ToolStripMenuItem item = sender as ToolStripMenuItem;
             if (item == null) return;
-            string code = (string)item.Tag;
-            if (IsResolutionSelected(code)) return;
+            string label = (string)item.Tag;
+            if (IsResolutionSelected(label)) return;
 
             RecordUndoEvent("Resolution Level");
             RecordUndoEvent("Resolution Value");
 
-            resolutionLevel = code;
+            resolutionLevel = label;
             string resolutionValueString = sourceJson["Raster Resolution"].SelectToken("[?(@.level == '" + resolutionLevel + "')].resolution").ToString();
             resolutionValue = Int32.Parse(resolutionValueString);
             dynamicMessage[1] = resolutionLevel;
