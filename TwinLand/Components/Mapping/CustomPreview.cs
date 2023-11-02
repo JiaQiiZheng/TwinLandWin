@@ -44,23 +44,13 @@ namespace TwinLand.Components.Mapping
             pManager.HideParameter(0);
         }
 
-        protected override void BeforeSolveInstance()
-        {
-            _curves.Clear();
-            _lines.Clear();
-            _breps.Clear();
-            _meshes.Clear();
-            _thickness.Clear();
-            _displayMaterials.Clear();
-        }
-
         /// <summary>
         /// This is the method that actually does the work.
         /// </summary>
         /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            Object geo = null;
+            IGH_GeometricGoo geo = null;
             int thinkness = 1;
             Object material = null;
             GH_Colour color = new GH_Colour(Color.Black);
@@ -69,19 +59,25 @@ namespace TwinLand.Components.Mapping
             DA.GetData("Thickness", ref thinkness);
             if (!DA.GetData("Material", ref material)) { return; }
 
+            _clip = BoundingBox.Union(_clip, geo.Boundingbox);
+
             DisplayMaterial displayMaterial = new DisplayMaterial();
+
             if (material != null)
             {
                 if (material.GetType().Name == color.GetType().Name)
                 {
                     color = (GH_Colour)material;
                     displayMaterial.Diffuse = color.Value;
+                    displayMaterial.Transparency = 1.0-((double)1 / 255 * color.Value.A);
+                    _displayMaterials.Add(new DisplayMaterial(displayMaterial.Diffuse, displayMaterial.Transparency));
                 }
 
                 else if (material.GetType().Name == "GH_Material")
                 {
                     GH_Material gh_material = (GH_Material)material;
                     displayMaterial = gh_material.Value;
+                    _displayMaterials.Add(displayMaterial);
                 }
             }
 
@@ -96,6 +92,13 @@ namespace TwinLand.Components.Mapping
                 Grasshopper.Kernel.Types.GH_Line l = (Grasshopper.Kernel.Types.GH_Line)geo;
                 _lines.Add(l.Value);
             }
+            
+            else if(geo.GetType().Name == "GH_Box")
+            {
+                GH_Box b = (GH_Box)geo;
+                Brep brep = Brep.CreateFromBox(b.Value);
+                _breps.Add(brep);
+            }
 
             else if (geo.GetType().Name == "GH_Brep")
             {
@@ -109,9 +112,7 @@ namespace TwinLand.Components.Mapping
                 _meshes.Add(gh_mesh.Value);
             }
 
-
             _thickness.Add(thinkness);
-            _displayMaterials.Add(displayMaterial);
 
             DA.SetData("Geometry", geo);
         }
@@ -130,8 +131,9 @@ namespace TwinLand.Components.Mapping
         }
 
         /// <summary>
-        /// static values
+        /// Dynamic values
         /// </summary>
+        private BoundingBox _clip;
         private readonly List<Curve> _curves = new List<Curve>();
         private readonly List<Line> _lines = new List<Line>();
         private readonly List<Brep> _breps = new List<Brep>();
@@ -140,9 +142,24 @@ namespace TwinLand.Components.Mapping
         private readonly List<DisplayMaterial> _displayMaterials = new List<DisplayMaterial>();
 
         /// <summary>
-        /// redraw by tracing line from the copy collection
+        /// Additional Methods
         /// </summary>
-        /// <param name="args"></param>
+        protected override void BeforeSolveInstance()
+        {
+            _clip = BoundingBox.Empty;
+            _curves.Clear();
+            _lines.Clear();
+            _breps.Clear();
+            _meshes.Clear();
+            _thickness.Clear();
+            _displayMaterials.Clear();
+        }
+
+        public override BoundingBox ClippingBox
+        {
+            get { return _clip; }
+        }
+
         public override void DrawViewportWires(IGH_PreviewArgs args)
         {
             base.DrawViewportWires(args);

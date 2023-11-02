@@ -124,7 +124,7 @@ namespace TwinLand.Components.FleX_Construct
 
                 double count_y = height / width * count;
                 double step_y = width / height * step;
-                for (int i = 0; i < count_y; i++)
+                for (int i = 0; i <= count_y; i++)
                 {
                     param_y.Add(-0.5 + i * step_y);
                 }
@@ -141,14 +141,13 @@ namespace TwinLand.Components.FleX_Construct
                 Vector3d vv = plane.ZAxis;
                 vv.Unitize();
                 vv *= velocity;
-                Vector3d rotA = plane.XAxis;
 
                 // rotate initial velocity based on random factor
-                rotA.Rotate(rd.NextDouble() * Math.PI * 2, plane.ZAxis);
-
                 for (int j = 0; j < pts.Count; j++)
                 {
-                    vv.Rotate((rd.NextDouble() - 0.5) * 2 * randomFactor, rotA);
+                    Vector3d rotA = plane.XAxis;
+                    rotA.Rotate(rd.NextDouble() * Math.PI * 2, plane.ZAxis);
+                    vv.Rotate((rd.NextDouble() - 0.5) * Math.PI * 2 * randomFactor, rotA);
                     vls.Add(vv);
                 }
             }

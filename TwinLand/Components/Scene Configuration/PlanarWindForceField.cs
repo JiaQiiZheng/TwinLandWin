@@ -34,7 +34,7 @@ namespace TwinLand.Components.Scene_Configuration
             pManager.AddNumberParameter("Wind Tunnel Width", "wind tunnel width", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("Wind Tunnel Height", "wind tunnel height", "", GH_ParamAccess.item);
             //pManager.AddNumberParameter("Wind Tunnel Radius", "wind tunnel radius", "Only apply radius when wind tunnel shape set to round", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("Wind Centroid Density", "wind centroid density", "", GH_ParamAccess.item);
+            pManager.AddIntegerParameter("Wind Centroid Density", "wind centroid density", "", GH_ParamAccess.item, 3);
             pManager.AddNumberParameter("Force Field Radius", "force field radius", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("Wind Force Strength", "wind force strength", "This parameter is meter/s", GH_ParamAccess.item);
             pManager.AddMeshParameter("Topography Mesh", "topography mesh", "", GH_ParamAccess.list);
@@ -80,7 +80,7 @@ namespace TwinLand.Components.Scene_Configuration
             double radius = 1.0;
             double ff_radius = 10.0;
             List<float> ff_radius_intervened = new List<float>();
-            int density = 5;
+            int density = 3;
 
             double wfs = 1.0;
 
@@ -138,7 +138,6 @@ namespace TwinLand.Components.Scene_Configuration
                     GH_Mesh gh_mesh = obs as GH_Mesh;
                     obstacle_mesh_list.Add(gh_mesh.Value);
                 }
-
             }
             obstacle_breps = obstacle_brep_list.ToArray();
             obstacle_meshes = obstacle_mesh_list.ToArray();
@@ -156,8 +155,13 @@ namespace TwinLand.Components.Scene_Configuration
             windPlanarBoundary = new Rectangle3d(plane, w_domain, h_domain);
 
             List<Point3d> pts = new List<Point3d>();
-            int w_count = density;
+            int w_count = density != 0 ? density : 1;
             int h_count = (int)(height / width * w_count);
+
+            if (h_count == 0)
+            {
+                h_count = 1;
+            }
 
             for (int i = 0; i <= w_count; i++)
             {

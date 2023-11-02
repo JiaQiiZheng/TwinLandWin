@@ -118,8 +118,6 @@ namespace TwinLand
             customSRS.SetFromUserInput(SRS_code);
             int userSRSInt = Int16.Parse(customSRS.GetAuthorityCode(null));
 
-            Debug.WriteLine(userSRSInt);
-
             for (int i = 0; i < boundary.Count; i++)
             {
                 GH_Path path = new GH_Path(i);
@@ -298,11 +296,11 @@ namespace TwinLand
         private string source_DEM = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString();
         private string dem_url = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["url"].ToString();
 
-        private string resolutionLevel = "high";
-        private int resolutionValue = 1024;
+        private string resolutionLevel = "med";
+        private int resolutionValue = 512;
 
         // dynamic message in component
-        private string[] dynamicMessage = new string[2] { JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString(), "high" };
+        private string[] dynamicMessage = new string[2] { JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString(), "med" };
 
         public string SourceList_DEM
         {

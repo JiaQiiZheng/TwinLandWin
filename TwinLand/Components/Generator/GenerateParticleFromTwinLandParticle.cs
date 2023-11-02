@@ -194,7 +194,7 @@ namespace TwinLand.Components.Generator
             }
             DA.SetDataTree(1, vertices);
             DA.SetDataTree(2, constraintPointIndices);
-        }
+            }
 
         /// <summary>
         /// Dynamic variables.

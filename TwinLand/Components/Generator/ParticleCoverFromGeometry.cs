@@ -55,6 +55,8 @@ namespace TwinLand.Components.Generator
             pManager.AddMeshParameter("Mesh", "mesh", "", GH_ParamAccess.tree);
             pManager.AddPointParameter("Vertices", "vertices", "", GH_ParamAccess.tree);
             pManager.AddIntegerParameter("Constraint Point Indices", "constraint point indices", "", GH_ParamAccess.tree);
+
+            pManager[1].DataMapping = GH_DataMapping.Flatten;
         }
 
         /// <summary>
@@ -92,7 +94,7 @@ namespace TwinLand.Components.Generator
             foreach (Curve crv in boundaries)
             {
                 // close crv to use intersection metho later
-                if (!crv.IsClosed)
+                if (crv != null && !crv.IsClosed)
                 {
                     if (!crv.MakeClosed(10))
                     {
@@ -100,7 +102,7 @@ namespace TwinLand.Components.Generator
                     }
                 }
 
-                bound_flatten.Add(Curve.ProjectToPlane(crv, Plane.WorldXY));
+                    bound_flatten.Add(Curve.ProjectToPlane(crv, Plane.WorldXY));
             }
             Curve[] bounds = null;
             var region = Curve.CreateBooleanRegions(bound_flatten.ToArray(), Plane.WorldXY, true, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
@@ -250,6 +252,7 @@ namespace TwinLand.Components.Generator
             Point3d[] projected = projected_list.ToArray();
             Point3d.CullDuplicates(projected, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
 
+
             // Lift projected point times based on thickness
             double layerCount = Math.Ceiling(layerThickness / maxHeight);
             List<Point3d> total = new List<Point3d>();
@@ -311,7 +314,7 @@ namespace TwinLand.Components.Generator
                 }
 
                 // Create 3d convex hull
-                var hull = ConvexHull.Create(pointsCoordinates, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+                var hull = ConvexHull.Create(pointsCoordinates, 0.0001);
 
                 // Convert hull to rhino mesh
                 var hullMesh = new Mesh();
