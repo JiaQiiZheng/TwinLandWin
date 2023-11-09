@@ -429,7 +429,7 @@ namespace TwinLand
             {
                 rasterSource = reader.GetString("Source_Raster");
             }
-            if (reader.ItemExists("Resolution", resolutionLevel))
+            if (reader.ItemExists("Resolution"))
             {
                 resolutionLevel = reader.GetString("Resolution");
             }
