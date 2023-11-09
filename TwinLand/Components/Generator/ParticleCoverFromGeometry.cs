@@ -41,6 +41,8 @@ namespace TwinLand.Components.Generator
             pManager.AddNumberParameter("Layer Thickness", "layer thickness", "", GH_ParamAccess.item);
             pManager.AddNumberParameter("Offset Factor", "offset factor", "", GH_ParamAccess.item, 1.0);
             pManager.AddBooleanParameter("Strict", "strict", "", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("Simulation Mode", "simulation mode", "", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("Reset", "reset", "", GH_ParamAccess.item, false);
 
             pManager[0].Optional = true;
             pManager[0].DataMapping = GH_DataMapping.Flatten;
@@ -73,6 +75,8 @@ namespace TwinLand.Components.Generator
             bool strict = true;
             double scaleFactor = 1.0;
             int maxCountPerAxis = 1000;
+            bool simulationMode = true;
+            bool reset = false;
 
             DA.GetDataList("Boundary", boundaries);
             if (!DA.GetDataList("Geometry", geometryList)) return;
@@ -81,6 +85,16 @@ namespace TwinLand.Components.Generator
             if (!DA.GetData("Layer Thickness", ref layerThickness)) return;
             DA.GetData("Strict", ref strict);
             DA.GetData("Offset Factor", ref scaleFactor);
+            DA.GetData("Simulation Mode", ref simulationMode);
+            DA.GetData("Reset", ref reset);
+
+            // Clear recorded data if reset
+            if (reset)
+            {
+                recordMesh.Clear();
+                recordConstraintIndices.Clear();
+                return;
+            }
 
             // Get properties from TL_particle object
             double maxWidth = TL_particle.MaximumWidth;
@@ -102,7 +116,7 @@ namespace TwinLand.Components.Generator
                     }
                 }
 
-                    bound_flatten.Add(Curve.ProjectToPlane(crv, Plane.WorldXY));
+                bound_flatten.Add(Curve.ProjectToPlane(crv, Plane.WorldXY));
             }
             Curve[] bounds = null;
             var region = Curve.CreateBooleanRegions(bound_flatten.ToArray(), Plane.WorldXY, true, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
@@ -343,13 +357,33 @@ namespace TwinLand.Components.Generator
                 hullMesh.Normals.ComputeNormals();
 
                 hullMeshTree.Append(new GH_Mesh(hullMesh), groupPath);
+
+                // Append new round of data into record datasets
+                int constraintIndex_curr = recordConstraintIndices.DataCount-1;
+                if (simulationMode)
+                {
+                    GH_Path groupPath_curr = new GH_Path(recordMesh.Branches.Count);
+                    recordMesh.Append(new GH_Mesh(hullMesh), groupPath_curr);
+                    for (int j = 0; j < TL_particle.VertexCount; j++)
+                    {
+                        recordConstraintIndices.Append(new GH_Integer(++constraintIndex_curr), groupPath_curr);
+                    }
+                }
             }
 
             // output
             DA.SetDataTree(0, origins);
-            DA.SetDataTree(1, hullMeshTree);
+            if (simulationMode)
+            {
+                DA.SetDataTree(1, recordMesh);
+                DA.SetDataTree(3, recordConstraintIndices);
+            }
+            else
+            {
+                DA.SetDataTree(1, hullMeshTree);
+                DA.SetDataTree(3, constraintPointIndices);
+            }
             DA.SetDataTree(2, vertices);
-            DA.SetDataTree(3, constraintPointIndices);
         }
 
         private List<double> CollectXYZ(Interval domain, double step)
@@ -370,6 +404,9 @@ namespace TwinLand.Components.Generator
         /// Dynamic variables
         /// </summary>
         Random rd = new Random();
+        GH_Structure<GH_Mesh> recordMesh = new GH_Structure<GH_Mesh>();
+        GH_Structure<GH_Integer> recordConstraintIndices = new GH_Structure<GH_Integer>();
+
 
         /// <summary>
         /// Provides an Icon for the component.

@@ -166,24 +166,30 @@
           }
         }
       },
-      "RhinoCommon/7.32.23215.19001": {
+      "RhinoCommon/8.0.23304.9001": {
         "type": "package",
         "compile": {
+          "lib/net48/Ed.Eto.dll": {
+            "related": ".xml"
+          },
           "lib/net48/Eto.dll": {
             "related": ".xml"
           },
           "lib/net48/Rhino.UI.dll": {},
           "lib/net48/RhinoCommon.dll": {
-            "related": ".XML"
+            "related": ".xml"
           }
         },
         "runtime": {
+          "lib/net48/Ed.Eto.dll": {
+            "related": ".xml"
+          },
           "lib/net48/Eto.dll": {
             "related": ".xml"
           },
           "lib/net48/Rhino.UI.dll": {},
           "lib/net48/RhinoCommon.dll": {
-            "related": ".XML"
+            "related": ".xml"
           }
         },
         "build": {
@@ -920,21 +926,23 @@
         "protobuf-net.png"
       ]
     },
-    "RhinoCommon/7.32.23215.19001": {
-      "sha512": "njatNx0ifFz3KbPfqRJlYB2KY24Ri8y24P8PSYL1TTTZNnu0Xfs7MW0DxxsmobDhsNBuyIHIBXJb6678NHQR+A==",
+    "RhinoCommon/8.0.23304.9001": {
+      "sha512": "hWuqXjcj/eb1/z8+bml4Bav/8Oug2p6t0mAVf37GhX9sP+M1aYNO9FappqeN8oefcIBkLBmAzr46DYNhTxFAGQ==",
       "type": "package",
-      "path": "rhinocommon/7.32.23215.19001",
+      "path": "rhinocommon/8.0.23304.9001",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "Eto-LICENSE.txt",
         "build/net48/RhinoCommon.targets",
+        "lib/net48/Ed.Eto.dll",
+        "lib/net48/Ed.Eto.xml",
         "lib/net48/Eto.dll",
         "lib/net48/Eto.xml",
         "lib/net48/Rhino.UI.dll",
-        "lib/net48/RhinoCommon.XML",
         "lib/net48/RhinoCommon.dll",
-        "rhinocommon.7.32.23215.19001.nupkg.sha512",
+        "lib/net48/RhinoCommon.xml",
+        "rhinocommon.8.0.23304.9001.nupkg.sha512",
         "rhinocommon.nuspec",
         "rhinocommon.png"
       ]
@@ -1345,7 +1353,7 @@
       "Microsoft.NETCore.Runtime >= 1.0.2-rc2-24027",
       "Newtonsoft.Json >= 13.0.3",
       "OsmSharp >= 7.0.0-pre022",
-      "RhinoCommon >= 7.32.23215.19001",
+      "RhinoCommon >= 8.0.23304.9001",
       "System.Drawing.Common >= 8.0.0-rc.1.23419.5",
       "System.Resources.Extensions >= 8.0.0-rc.1.23419.4",
       "System.ValueTuple >= 4.5.0",
@@ -1425,7 +1433,7 @@
           },
           "RhinoCommon": {
             "target": "Package",
-            "version": "[7.32.23215.19001, )"
+            "version": "[8.0.23304.9001, )"
           },
           "System.Drawing.Common": {
             "target": "Package",
@@ -1447,5 +1455,17 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.401\\RuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1608",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Detected package version outside of dependency constraint: Grasshopper 7.32.23215.19001 requires RhinoCommon (= 7.32.23215.19001) but version RhinoCommon 8.0.23304.9001 was resolved.",
+      "libraryId": "RhinoCommon",
+      "targetGraphs": [
+        ".NETFramework,Version=v4.8"
+      ]
+    }
+  ]
 }

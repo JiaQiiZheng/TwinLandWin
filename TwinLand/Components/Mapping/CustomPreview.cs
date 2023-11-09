@@ -164,6 +164,8 @@ namespace TwinLand.Components.Mapping
         {
             base.DrawViewportWires(args);
 
+            if (this.Locked) { return; }
+
             if (!this.Attributes.Selected)
             {
                 try

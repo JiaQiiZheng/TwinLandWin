@@ -35,7 +35,7 @@
         <PackageReference Include="Microsoft.NETCore.Runtime" Version="1.0.2-rc2-24027" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="OsmSharp" Version="7.0.0-pre022" />
-        <PackageReference Include="RhinoCommon" Version="7.32.23215.19001" />
+        <PackageReference Include="RhinoCommon" Version="8.0.23304.9001" />
         <PackageReference Include="System.Drawing.Common" Version="8.0.0-rc.1.23419.5" />
         <PackageReference Include="System.Resources.Extensions" Version="8.0.0-rc.1.23419.4" />
         <PackageReference Include="System.ValueTuple" Version="4.5.0" />

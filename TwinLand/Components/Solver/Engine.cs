@@ -68,7 +68,6 @@ namespace TwinLand
         Stopwatch sw_1 = new Stopwatch();
         Stopwatch sw_2 = new Stopwatch();
         long totalTime_ms = 0;
-        long totalUpdateTime_ms = 0;
         List<string> log = new List<string>();
 
         // time stamps
@@ -119,7 +118,6 @@ namespace TwinLand
                 // reset time tracking
                 counter = 0;
                 totalTime_ms = 0;
-                totalUpdateTime_ms = 0;
                 sw_1.Stop();
                 sw_2.Reset();
 
@@ -275,24 +273,21 @@ namespace TwinLand
                 // logging
                 log = new List<string>();
                 counter++;
-                log.Add(counter.ToString());
+                log.Add($"Computing Count: {counter}");
                 long timer_ms = sw_1.ElapsedMilliseconds;
                 sw_1.Restart();
                 totalTime_ms += timer_ms;
-                log.Add(totalTime_ms.ToString());
-                log.Add(timer_ms.ToString());
+                log.Add($"Total Time: {TimeSpan.FromMilliseconds(totalTime_ms).TotalSeconds} s");
+                log.Add($"Computing Time: {timer_ms} ms");
                 float average = (float)totalTime_ms / (float)counter;
-                log.Add(average.ToString());
+                log.Add($"Average Time: {average} ms");
 
                 // start update
                 UpdateTask.Start();
 
                 // add solver timing info to log
-                int timerSolver = UpdateTask.Result;
-                totalTime_ms += timerSolver;
-                float ratUpdateTime = (float)totalUpdateTime_ms / (float)counter;
-                log.Add(timerSolver.ToString());
-                log.Add(ratUpdateTime.ToString());
+                int subStep = UpdateTask.Result;
+                log.Add($"Sub Step: {subStep}");
             }
 
             if (run && options.FixedTotalIterations < 1)

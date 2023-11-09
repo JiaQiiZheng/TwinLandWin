@@ -41,6 +41,7 @@ namespace TwinLand.Components.Scene_Construction
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddBrepParameter("Polygon", "polygon", "Projected polygon", GH_ParamAccess.tree);
+            pManager.AddPointParameter("Project Points", "project pts", "", GH_ParamAccess.tree);
         }
 
         /// <summary>
@@ -50,6 +51,7 @@ namespace TwinLand.Components.Scene_Construction
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             GH_Structure<IGH_GeometricGoo> projected = new GH_Structure<IGH_GeometricGoo>();
+            GH_Structure<GH_Point> projectedPt = new GH_Structure<GH_Point>();
 
             GH_Structure<IGH_GeometricGoo> data = new GH_Structure<IGH_GeometricGoo>();
             IGH_GeometricGoo geometry = null;
@@ -80,91 +82,50 @@ namespace TwinLand.Components.Scene_Construction
             {
                 GH_Path path = new GH_Path(data.get_Path(i));
                 var branch = data.get_Branch(path);
+                int dataCount = branch.Count;
 
                 // count the number of polygon shapes
-                int polygonCount = 0;
-                for (int j = 0; j < branch.Count; j++)
+                List<Point3d> centroids_list = new List<Point3d>();
+
+                for (int j = 0; j < dataCount; j++)
                 {
                     var polygon = branch[j];
-                    if (polygon != null && polygon.GetType() == GH_TypeLib.t_gh_brep)
-                    {
-                        polygonCount++;
-                    }
-                }
 
-                Point3d[] centroids = new Point3d[polygonCount];
-                Point3d[] pts_projected = new Point3d[polygonCount];
-
-
-                // find all centroids of polygons
-                for (int j = 0; j < polygonCount; j++)
-                {
-                    var polygon = branch[j];
+                    // find all centroids of polygons
                     if (polygon != null && polygon.GetType() == GH_TypeLib.t_gh_brep)
                     {
                         GH_Brep brep = polygon as GH_Brep;
                         AreaMassProperties amp = AreaMassProperties.Compute(brep.Value);
                         if (amp != null)
                         {
-                            centroids[j] = amp.Centroid;
+                            // start to project
+                            Point3d[] centroids = new Point3d[1];
+                            Point3d[] pts_projected = new Point3d[1];
+
+                            centroids[0] = amp.Centroid;
+
+                            pts_projected = Intersection.ProjectPointsToMeshes(meshes, centroids, direction, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+
+                            Point3d mc = centroids[0];
+                            Point3d pp = pts_projected.Length>0? pts_projected[0] : Point3d.Unset;
+
+                            if (mc != null && pp != Point3d.Unset)
+                            {
+                                Vector3d vt = new Vector3d(pp.X - mc.X, pp.Y - mc.Y, pp.Z - mc.Z);
+                                Transform motion = Transform.Translation(vt);
+                                GH_Brep gh_polygon = polygon as GH_Brep;
+                                gh_polygon.Transform(motion);
+
+                                projected.Append(gh_polygon, path);
+                                projectedPt.Append(new GH_Point(pp), path);
+                            }
                         }
                     }
-                }
-
-                // project the mass centroid of polygons to target geometry
-                if (geometry.TypeName == "Brep")
-                {
-                    pts_projected = Intersection.ProjectPointsToBreps(breps, centroids, direction, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
-                }
-                else if (geometry.TypeName == "Mesh")
-                {
-                    pts_projected = Intersection.ProjectPointsToMeshes(meshes, centroids, direction, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
-                }
-
-                // valify the projection count
-                if (pts_projected == null)
-                {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "no valid polygon could be projected.");
-                    return;
-                }
-                int projectedCount = pts_projected.Length;
-                if (polygonCount != projectedCount)
-                {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "some centroid points of geometry failed in projection");
-                }
-
-
-                // get vector from mass centroid of polygons to projected pts, then move polygon base on the its moving vector
-                Vector3d[] vts = new Vector3d[projectedCount];
-                List<IGH_GeometricGoo> projectedBrep = new List<IGH_GeometricGoo>();
-
-                for (int j = 0; j < projectedCount; j++)
-                {
-                    Point3d mc = centroids[j];
-                    Point3d pp = pts_projected[j];
-
-                    Vector3d vt = new Vector3d(pp.X - mc.X, pp.Y - mc.Y, pp.Z - mc.Z);
-                    vts[j] = vt;
-
-                    var polygon = branch[j];
-                    if (polygon.GetType() == GH_TypeLib.t_gh_brep)
-                    {
-                        GH_Brep originBrep_copy = ((GH_Brep)polygon).DuplicateBrep();
-
-                        Transform motion = Transform.Translation(vt);
-                        originBrep_copy.Transform(motion);
-                        projectedBrep.Add(originBrep_copy);
-                    }
-                }
-
-                // append projected polygon into the same path in output tree
-                for (int j = 0; j < projectedBrep.Count; j++)
-                {
-                    projected.Append(projectedBrep[j], path);
                 }
             }
 
             DA.SetDataTree(0, projected);
+            DA.SetDataTree(1, projectedPt);
         }
 
         /// <summary>

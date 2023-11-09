@@ -220,7 +220,7 @@ namespace TwinLand
 
                 var bitmapPath = folderPath + fileName + "_" + i + "." + imageType;
                 mapList.Append(new GH_String(bitmapPath), path);
-                
+
                 imgFrame.Append(new GH_Rectangle(rect), path);
                 AddPreviewItem(bitmapPath, rect);
             }
@@ -411,11 +411,30 @@ namespace TwinLand
         private string rasterURL = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Raster"][0]["url"].ToString();
 
         // default raster resolution selection
-        private string resolutionLevel = "high";
+        private static string resolutionLevel = "max";
         private int resolutionValue = 1024;
 
         // dynamic message in component
-        private string[] dynamicMessage = new string[2]{ JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Raster"][0]["service"].ToString(), "high"};
+        private string[] dynamicMessage = new string[2] { JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Raster"][0]["service"].ToString(), resolutionLevel };
+
+        public override bool Write(GH_IWriter writer)
+        {
+            writer.SetString("Source_Raster", rasterSource);
+            writer.SetString("Resolution", resolutionLevel);
+            return base.Write(writer);
+        }
+        public override bool Read(GH_IReader reader)
+        {
+            if (reader.ItemExists("Source_Raster"))
+            {
+                rasterSource = reader.GetString("Source_Raster");
+            }
+            if (reader.ItemExists("Resolution", resolutionLevel))
+            {
+                resolutionLevel = reader.GetString("Resolution");
+            }
+            return base.Read(reader);
+        }
 
         protected override System.Drawing.Bitmap Icon
         {

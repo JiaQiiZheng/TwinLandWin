@@ -24,6 +24,7 @@ namespace TwinLand
         
         public class ParamCombo
         {
+            public string paramGroup { get; set; }
             public string paramName { get; set; }
             public object paramValue { get; set; }
             public string paramType { get; set; }
@@ -33,6 +34,11 @@ namespace TwinLand
                 this.paramName = paramName;
                 this.paramValue = paramValue;
                 this.paramType = paramValue.GetType().ToString();
+            }
+            
+            public ParamCombo(string paramGroup)
+            {
+                this.paramGroup = paramGroup;
             }
         }
     }

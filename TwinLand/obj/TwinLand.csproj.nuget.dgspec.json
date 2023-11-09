@@ -74,7 +74,7 @@
             },
             "RhinoCommon": {
               "target": "Package",
-              "version": "[7.32.23215.19001, )"
+              "version": "[8.0.23304.9001, )"
             },
             "System.Drawing.Common": {
               "target": "Package",

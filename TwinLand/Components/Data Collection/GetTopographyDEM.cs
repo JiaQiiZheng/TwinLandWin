@@ -279,6 +279,9 @@ namespace TwinLand
             dynamicMessage[1] = resolutionLevel;
             Message = GetMessage(dynamicMessage);
 
+            Debug.WriteLine(resolutionLevel);
+
+
             ExpireSolution(true);
         }
 
@@ -296,11 +299,12 @@ namespace TwinLand
         private string source_DEM = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString();
         private string dem_url = JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["url"].ToString();
 
-        private string resolutionLevel = "med";
+        private static string resolutionLevel = "med";
         private int resolutionValue = 512;
 
+
         // dynamic message in component
-        private string[] dynamicMessage = new string[2] { JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString(), "med" };
+        private string[] dynamicMessage = new string[2] { JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Topo"][0]["service"].ToString(), resolutionLevel };
 
         public string SourceList_DEM
         {
@@ -327,12 +331,21 @@ namespace TwinLand
         public override bool Write(GH_IO.Serialization.GH_IWriter writer)
         {
             writer.SetString("Source_DEM", Source_DEM);
+            writer.SetString("Resolution", resolutionLevel);
             return base.Write(writer);
         }
 
         public override bool Read(GH_IO.Serialization.GH_IReader reader)
         {
-            Source_DEM = reader.GetString("Source_DEM");
+            if (reader.ItemExists("Source_DEM"))
+            {
+                Source_DEM = reader.GetString("Source_DEM");
+            }
+            if (reader.ItemExists("Resolution"))
+            {
+                resolutionLevel = reader.GetString("Resolution");
+            }
+
             return base.Read(reader);
         }
 

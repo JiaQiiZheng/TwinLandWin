@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Diagnostics;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Rhino.Geometry;
-
-using FlexCLI;
 
 namespace TwinLand.Components.Scene_Construction
 {
@@ -44,12 +42,12 @@ namespace TwinLand.Components.Scene_Construction
         /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_Structure<GH_Integer> indexTree = new GH_Structure<GH_Integer> ();
-            List<double> stiffs = new List<double> ();
+            GH_Structure<GH_Integer> indexTree = new GH_Structure<GH_Integer>();
+            List<double> stiffs = new List<double>();
 
             List<ConstraintSystem> constraints = new List<ConstraintSystem>();
 
-            if(!DA.GetDataTree("Constraint Point Indices", out indexTree)) { return; }
+            DA.GetDataTree("Constraint Point Indices", out indexTree);
             DA.GetDataList("Stiffness", stiffs);
 
             for (int i = 0; i < indexTree.Branches.Count; i++)
@@ -59,17 +57,21 @@ namespace TwinLand.Components.Scene_Construction
                 {
                     indices.Add(index.Value);
                 }
-                
+
                 // use 1.0 as stiffness if not indicated
                 if (indices.Count > 1)
                 {
-                    if(stiffs.Count > i && stiffs[i] >= 0.0 && stiffs[i] <= 1.0)
+                    if (stiffs.Count == 0)
+                    {
+                        constraints.Add(new ConstraintSystem(indices.ToArray(), defaultStiffness));
+                    }
+                    else if (stiffs.Count > i)
                     {
                         constraints.Add(new ConstraintSystem(indices.ToArray(), (float)stiffs[i]));
                     }
                     else
                     {
-                        constraints.Add(new ConstraintSystem(indices.ToArray(), defaultStiffness));
+                        constraints.Add(new ConstraintSystem(indices.ToArray(), (float)stiffs[stiffs.Count - 1]));
                     }
                 }
             }

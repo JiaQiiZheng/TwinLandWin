@@ -110,9 +110,6 @@ namespace TwinLand
             // Surface Tension
             pManager.AddNumberParameter("Surface Tension", "surface tension",
               "Surface tension acts to minimize the surface area of a fluid. It is only visable while doing high resolution and small scale simulation like droplets splitting and merging. Note that it is expensive computationally", GH_ParamAccess.item, 0.0);
-            // Solid Pressure
-            pManager.AddNumberParameter("Solid Pressure", "solid pressure",
-              "Solid tension acts to control how intense a solid behave in collision", GH_ParamAccess.item, 1.0);
             // Free Surface Drag
             pManager.AddNumberParameter("Free Surface Drag", "free surface drags",
               "Drag force applied to boundary fluid particles", GH_ParamAccess.item, 0.0);
@@ -121,6 +118,9 @@ namespace TwinLand
               GH_ParamAccess.item, 1.0);
 
             // Solid Parameters
+            // Solid Pressure
+            pManager.AddNumberParameter("Solid Pressure", "solid pressure",
+              "Solid pressure acts to control how intense a solid behave in collision", GH_ParamAccess.item, 1.0);
             // Plastic Stop Threshold
             pManager.AddNumberParameter("Plastic Stop Threshold", "plastic stop threshold",
               "Indicate a threshold value for a solid shape. Once its moving magnitude smaller that the value than stop iteration",
@@ -139,6 +139,8 @@ namespace TwinLand
             // Lift
             pManager.AddNumberParameter("Lift", "lift", "Lift force applied to particles of cloth and inflatables",
               GH_ParamAccess.item, 0.0);
+
+            // Configurations
             // Relaxation Mode
             pManager.AddBooleanParameter("Relaxation Mode", "relaxation mode",
               "Set to true to apply RelaxationLocal Mode, will have slower convergence but more reliable. Set to false to apply RelaxationGlobal Mode, will be faster but could lead to errors in complexity.", GH_ParamAccess.item,
