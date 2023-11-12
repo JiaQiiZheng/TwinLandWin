@@ -30,6 +30,7 @@ namespace TwinLand.Components.FleX_Construct
             pManager.AddGeometryParameter("Brep", "brep", "", GH_ParamAccess.list);
             pManager.AddNumberParameter("Spacing", "spacing", "", GH_ParamAccess.item);
             pManager.AddBooleanParameter("Strict", "strict", "", GH_ParamAccess.item, true);
+            pManager.AddBooleanParameter("Union", "union", "", GH_ParamAccess.item, false);
         }
 
         /// <summary>
@@ -50,6 +51,7 @@ namespace TwinLand.Components.FleX_Construct
             double spacing = 1.0;
 
             bool strict = true;
+            bool union = false;
 
             if(!DA.GetDataList("Brep", breps)) { return; }
             if(!DA.GetData("Spacing", ref spacing)) { return; }
@@ -60,84 +62,171 @@ namespace TwinLand.Components.FleX_Construct
             }
             DA.GetData("Strict", ref strict);
 
-            // get bounding box
-            BoundingBox bbox = BoundingBox.Empty;
-            foreach (Brep brep in breps)
+            DA.GetData("Union", ref union);
+
+            if (union)
             {
-                if (brep != null)
+                // get bounding box
+                BoundingBox bbox = BoundingBox.Empty;
+                foreach (Brep brep in breps)
                 {
-                    bbox.Union(brep.GetBoundingBox(true));
-                }
-
-                // force spacing not smaller by a certain number to prevent crashing
-                BoundingBox bb = brep.GetBoundingBox(true);
-                if ((bb.Max.X - bb.Min.X)/spacing > 100)
-                {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Spacing is too small for an efficient lattice generation.");
-                    return;
-                }
-            }
-
-            // calculate box domain
-            Point3d min = bbox.Min;
-            Point3d max = bbox.Max;
-
-            Interval x_domain = new Interval(min.X, max.X);
-            Interval y_domain = new Interval(min.Y, max.Y);
-            Interval z_domain = new Interval(min.Z, max.Z);
-
-            // get sub points location
-            int x_count = (int)Math.Ceiling(x_domain.Length / spacing);
-            int y_count = (int)Math.Ceiling(y_domain.Length / spacing);
-            int z_count = (int)Math.Ceiling(z_domain.Length / spacing);
-
-            // get x y z list for points
-            List<double> xs = CollectXYZ(x_domain.Min, x_count, spacing);
-            List<double> ys = CollectXYZ(y_domain.Min, y_count, spacing);
-            List<double> zs = CollectXYZ(z_domain.Min, z_count, spacing);
-
-            // construct point cloud based on bounding box using cross-reference
-            List<double> xs_ref = new List<double>();
-            List<double> ys_ref = new List<double>();
-            List<double> zs_ref = new List<double>();
-            
-            // Hilistic cross-reference
-            for (int i = 0; i < zs.Count; i++)
-            {
-                double z_ref = zs[i];
-                for (int j = 0; j < ys.Count; j++)
-                {
-                    double y_ref = ys[j];
-                    for (int k = 0; k < xs.Count; k++)
+                    if (brep != null)
                     {
-                        double x_ref = xs[k];
+                        bbox.Union(brep.GetBoundingBox(true));
+                    }
 
-                        // add to ref collections
-                        xs_ref.Add(x_ref);
-                        ys_ref.Add(y_ref);
-                        zs_ref.Add(z_ref);
+                    // force spacing not smaller by a certain number to prevent crashing
+                    BoundingBox bb = brep.GetBoundingBox(true);
+                    if ((bb.Max.X - bb.Min.X) / spacing > 100)
+                    {
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Spacing is too small for an efficient lattice generation.");
+                        return;
                     }
                 }
-            }
 
-            // if point is inside brep, then add it to cloud
-            GH_Structure<GH_Point> pts = new GH_Structure<GH_Point>();
-            for (int i = 0; i < xs_ref.Count; i++)
-            {
-                Point3d pt = new Point3d(xs_ref[i], ys_ref[i], zs_ref[i]);
-                
-                // check if the point is inside any of the brep
-                foreach(Brep b in breps)
+                // calculate box domain
+                Point3d min = bbox.Min;
+                Point3d max = bbox.Max;
+
+                Interval x_domain = new Interval(min.X, max.X);
+                Interval y_domain = new Interval(min.Y, max.Y);
+                Interval z_domain = new Interval(min.Z, max.Z);
+
+                // get sub points location
+                int x_count = (int)Math.Ceiling(x_domain.Length / spacing);
+                int y_count = (int)Math.Ceiling(y_domain.Length / spacing);
+                int z_count = (int)Math.Ceiling(z_domain.Length / spacing);
+
+                // get x y z list for points
+                List<double> xs = CollectXYZ(x_domain.Min, x_count, spacing);
+                List<double> ys = CollectXYZ(y_domain.Min, y_count, spacing);
+                List<double> zs = CollectXYZ(z_domain.Min, z_count, spacing);
+
+                // construct point cloud based on bounding box using cross-reference
+                List<double> xs_ref = new List<double>();
+                List<double> ys_ref = new List<double>();
+                List<double> zs_ref = new List<double>();
+
+                // Hilistic cross-reference
+                for (int i = 0; i < zs.Count; i++)
                 {
-                    if (b.IsPointInside(pt, RhinoMath.SqrtEpsilon, strict))
+                    double z_ref = zs[i];
+                    for (int j = 0; j < ys.Count; j++)
                     {
-                        pts.Append(new GH_Point(pt));
-                        continue;
+                        double y_ref = ys[j];
+                        for (int k = 0; k < xs.Count; k++)
+                        {
+                            double x_ref = xs[k];
+
+                            // add to ref collections
+                            xs_ref.Add(x_ref);
+                            ys_ref.Add(y_ref);
+                            zs_ref.Add(z_ref);
+                        }
                     }
                 }
-            }
 
-            DA.SetDataTree(0, pts);
+                // if point is inside brep, then add it to cloud
+                GH_Structure<GH_Point> pts = new GH_Structure<GH_Point>();
+                for (int i = 0; i < xs_ref.Count; i++)
+                {
+                    Point3d pt = new Point3d(xs_ref[i], ys_ref[i], zs_ref[i]);
+
+                    // check if the point is inside any of the brep
+                    foreach (Brep b in breps)
+                    {
+                        if (b.IsPointInside(pt, RhinoMath.SqrtEpsilon, strict))
+                        {
+                            pts.Append(new GH_Point(pt));
+                            continue;
+                        }
+                    }
+                }
+
+                DA.SetDataTree(0, pts);
+            }
+            else
+            {
+                GH_Structure<GH_Point> pts = new GH_Structure<GH_Point>();
+
+                // get bounding box
+                for (int l = 0; l < breps.Count; l++)
+                {
+                    GH_Path path = new GH_Path(l);
+
+                    BoundingBox bbox = BoundingBox.Empty;
+                    Brep brep = breps[l];
+                    if (brep != null)
+                    {
+                        bbox = brep.GetBoundingBox(true);
+                    }
+                    if ((bbox.Max.X - bbox.Min.X) / spacing > 100)
+                    {
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Spacing is too small for an efficient lattice generation.");
+                        return;
+                    }
+
+                    // calculate box domain
+                    Point3d min = bbox.Min;
+                    Point3d max = bbox.Max;
+
+                    Interval x_domain = new Interval(min.X, max.X);
+                    Interval y_domain = new Interval(min.Y, max.Y);
+                    Interval z_domain = new Interval(min.Z, max.Z);
+
+                    // get sub points location
+                    int x_count = (int)Math.Ceiling(x_domain.Length / spacing);
+                    int y_count = (int)Math.Ceiling(y_domain.Length / spacing);
+                    int z_count = (int)Math.Ceiling(z_domain.Length / spacing);
+
+                    // get x y z list for points
+                    List<double> xs = CollectXYZ(x_domain.Min, x_count, spacing);
+                    List<double> ys = CollectXYZ(y_domain.Min, y_count, spacing);
+                    List<double> zs = CollectXYZ(z_domain.Min, z_count, spacing);
+
+                    // construct point cloud based on bounding box using cross-reference
+                    List<double> xs_ref = new List<double>();
+                    List<double> ys_ref = new List<double>();
+                    List<double> zs_ref = new List<double>();
+
+                    // Hilistic cross-reference
+                    for (int i = 0; i < zs.Count; i++)
+                    {
+                        double z_ref = zs[i];
+                        for (int j = 0; j < ys.Count; j++)
+                        {
+                            double y_ref = ys[j];
+                            for (int k = 0; k < xs.Count; k++)
+                            {
+                                double x_ref = xs[k];
+
+                                // add to ref collections
+                                xs_ref.Add(x_ref);
+                                ys_ref.Add(y_ref);
+                                zs_ref.Add(z_ref);
+                            }
+                        }
+                    }
+
+                    
+                    for (int i = 0; i < xs_ref.Count; i++)
+                    {
+                        Point3d pt = new Point3d(xs_ref[i], ys_ref[i], zs_ref[i]);
+
+                        // check if the point is inside any of the brep
+                        foreach (Brep b in breps)
+                        {
+                            if (b.IsPointInside(pt, RhinoMath.SqrtEpsilon, strict))
+                            {
+                                pts.Append(new GH_Point(pt), path);
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                DA.SetDataTree(0, pts);
+            }
         }
 
         /// <summary>

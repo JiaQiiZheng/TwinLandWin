@@ -7,6 +7,7 @@ using Rhino.Geometry;
 using FlexCLI;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using System.Linq;
 
 namespace TwinLand
 {
@@ -30,9 +31,9 @@ namespace TwinLand
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddGenericParameter("FleX", "FleX", "", GH_ParamAccess.item
-            );
-            pManager.AddIntegerParameter("Interval", "Interval", "Display particles by indicating interval of solver iteration, large interval speed up the performance but lose smooth appearance", GH_ParamAccess.item, 1);
+            pManager.AddGenericParameter("FleX", "FleX", "", GH_ParamAccess.item);
+            pManager.AddBooleanParameter("Output Velocity", "output velocity", "", GH_ParamAccess.item, false);
+            pManager.AddIntegerParameter("Interval", "interval", "Display particles by indicating interval of solver iteration, large interval speed up the performance but lose smooth appearance", GH_ParamAccess.item, 1);
         }
 
         /// <summary>
@@ -40,8 +41,8 @@ namespace TwinLand
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddPointParameter("Point", "pt", "", GH_ParamAccess.tree);
-            pManager.AddVectorParameter("Vector", "vector", "", GH_ParamAccess.tree);
+            pManager.AddPointParameter("Position", "position", "", GH_ParamAccess.tree);
+            pManager.AddVectorParameter("Velocity", "velocity", "", GH_ParamAccess.tree);
         }
 
         /// <summary>
@@ -50,11 +51,6 @@ namespace TwinLand
         private int interval = 1;
         private int counter = 0;
 
-        /// <summary>
-        /// declare new empty tree, output empty when iteration not step onto the interval
-        /// </summary>
-        private GH_Structure<GH_Point> points = new GH_Structure<GH_Point>();
-        private GH_Structure<GH_Vector> vectors = new GH_Structure<GH_Vector>();
 
         /// <summary>
         /// This is the method that actually does the work.
@@ -67,6 +63,9 @@ namespace TwinLand
             DA.GetData("Interval", ref interval);
             interval = Math.Max(1, interval);
 
+            bool outputVelocity = false;
+            DA.GetData("Output Velocity", ref outputVelocity);
+
             if (counter % interval == 0)
             {
                 Flex flex = null;
@@ -76,21 +75,38 @@ namespace TwinLand
                 {
                     List<FlexParticle> particles = flex.Scene.GetAllParticles();
 
-                    points = new GH_Structure<GH_Point>();
-                    vectors = new GH_Structure<GH_Vector>();
+                    positions = new GH_Structure<GH_Point>();
+                    velocities = new GH_Structure<GH_Vector>();
 
-                    foreach (FlexParticle fp in particles)
+                    if (outputVelocity)
                     {
-                        GH_Path p = new GH_Path(fp.GroupIndex);
-                        points.Append(new GH_Point(new Point3d(fp.PositionX, fp.PositionY, fp.PositionZ)), p);
-                        vectors.Append(new GH_Vector(new Vector3d(fp.VelocityX, fp.VelocityY, fp.VelocityZ)), p);
+                        foreach (FlexParticle fp in particles)
+                        {
+                            GH_Path path = new GH_Path(fp.GroupIndex);
+                            positions.Append(new GH_Point(new Point3d(fp.PositionX, fp.PositionY, fp.PositionZ)), path);
+                            velocities.Append(new GH_Vector(new Vector3d(fp.VelocityX, fp.VelocityY, fp.VelocityZ)), path);
+                        }
                     }
+                    else
+                    {
+                        foreach (FlexParticle fp in particles)
+                        {
+                            GH_Path path = new GH_Path(fp.GroupIndex);
+                            positions.Append(new GH_Point(new Point3d(fp.PositionX, fp.PositionY, fp.PositionZ)), path);
+                        }
+                    }
+
+                    DA.SetDataTree(0, positions);
+                    DA.SetDataTree(1, velocities);
                 }
             }
-
-            DA.SetDataTree(0, points);
-            DA.SetDataTree(1, vectors);
         }
+
+        /// <summary>
+        /// declare new empty tree, output empty when iteration not step onto the interval
+        /// </summary>
+        private GH_Structure<GH_Point> positions = new GH_Structure<GH_Point>();
+        private GH_Structure<GH_Vector> velocities = new GH_Structure<GH_Vector>();
 
         /// <summary>
         /// Provides an Icon for every component that will be visible in the User Interface.

@@ -1,18 +1,92 @@
-﻿using System;
+﻿using Rhino.Geometry;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace TwinLand
 {
-    //public void Test()
-    //{
-    //    Flex flex = new Flex();
-    //    flex.Scene.RegisterCustomConstraints()
-    //}
+    // FLuids
+    class Fluid
+    {
+        public float[] Positions { get; private set; }
+        public float[] Velocities { get; private set; }
+        public float[] InverseMasses { get; private set; }
+        public int GroupIndex { get; private set; }
 
+        public Fluid(float[] positions, float[] velocities, float[] inverseMasses, int groupIndex)
+        {
+            this.Positions = positions;
+            this.Velocities = velocities;
+            this.InverseMasses = inverseMasses;
+            this.GroupIndex = groupIndex;
+        }
 
+        public override string ToString()
+        {
+            string str = "Fluid Group: ";
+            str += $"\nParticle Count: {this.Positions.Length / 3}";
+            str += $"\nGroup Index: {this.GroupIndex}";
+            return str + "\n";
+        }
+    }
+
+    // Rigid Body
+    class RigidBody
+    {
+        public float[] Vertices;
+        public float[] Velocity;
+        public float[] VertexNormals;
+        public float[] InverseMasses;
+        public float Stiffness;
+        public int GroupIndex;
+        public float[] MassCenter;
+        public Mesh Mesh;
+
+        public RigidBody(float[] vertices, float[] velocity, float[] vertexNormals, float[] inverseMass, float stiffness, int groupIndex)
+        {
+            this.Vertices = vertices;
+            this.Velocity = velocity;
+            this.VertexNormals = vertexNormals;
+            this.InverseMasses = inverseMass;
+            this.Stiffness = stiffness;
+            this.GroupIndex = groupIndex;
+
+            this.MassCenter = new float[3] { 0.0f, 0.0f, 0.0f };
+            int round = vertices.Length / 3;
+            for (int i = 0; i < round; i++)
+            {
+                MassCenter[0] += vertices[3 * i];
+                MassCenter[1] += vertices[3 * i + 1];
+                MassCenter[2] += vertices[3 * i + 2];
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                MassCenter[i] /= round;
+            }
+        }
+
+        public bool HasMesh()
+        {
+            return Mesh != null && Mesh.IsValid;
+        }
+
+        public override string ToString()
+        {
+            string str = "Rigid Body:";
+            str += $"\nVertex Count: {Vertices.Length / 3}";
+            str += $"\nTotal Mass: {(Vertices.Length / 3 * (1.0 / InverseMasses[0]))}";
+            str += $"\nStiffness: {Stiffness}";
+            str += $"\nGroup Index: {GroupIndex}";
+            return str + "\n";
+        }
+    }
+
+    // Cosntraint System
     public class ConstraintSystem
     {
         // properties
@@ -28,7 +102,6 @@ namespace TwinLand
 
         public int TimeStamp;
 
-        // constructors
         public ConstraintSystem()
         {
             AnchorIndices = new int[0];
@@ -42,7 +115,7 @@ namespace TwinLand
 
             TimeStamp = 0;
         }
-        
+
         public ConstraintSystem(int[] anchorIndices)
         {
             AnchorIndices = anchorIndices;
@@ -56,7 +129,7 @@ namespace TwinLand
 
             TimeStamp = ConvertParams.GetTimeStampInMillisecond();
         }
-        
+
         public ConstraintSystem(int[] shapeMatchingIndices, float shapeStiffness)
         {
             AnchorIndices = new int[0];

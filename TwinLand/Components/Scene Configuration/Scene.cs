@@ -28,6 +28,8 @@ namespace TwinLand
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddGenericParameter("Particles", "particles", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Fluids", "fluids", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Rigid Bodies", "rigid bodies", "", GH_ParamAccess.list);
             // TODO. Add more types of 
             pManager.AddGenericParameter("Custom Constraints", "constraints",
               "This is a optional supplement previous constraints", GH_ParamAccess.list);
@@ -57,15 +59,29 @@ namespace TwinLand
             FlexScene scene = new FlexScene();
 
             List<FlexParticle> particles = new List<FlexParticle>();
+            List<Fluid> fluids = new List<Fluid>();
+            List<RigidBody> rigidBodies = new List<RigidBody>();
             List<ConstraintSystem> constraints = new List<ConstraintSystem>();
 
             DA.GetDataList("Particles", particles);
-            DA.GetDataList("Custom Constraints", constraints);
+            DA.GetDataList("Fluids", fluids);
+            DA.GetDataList("Rigid Bodies", rigidBodies);
+            DA.GetDataList("Custom Constraints", constraints);  
 
             // register input for FLeX engine
             foreach (FlexParticle p in particles)
             {
                 scene.RegisterParticles(new float[3] { p.PositionX, p.PositionY, p.PositionZ }, new float[3] { p.VelocityX, p.VelocityY, p.VelocityZ }, new float[1] { p.InverseMass }, p.IsFluid, p.SelfCollision, p.GroupIndex);
+            }
+            
+            foreach (Fluid fl in fluids)
+            {
+                scene.RegisterFluid(fl.Positions, fl.Velocities, fl.InverseMasses, fl.GroupIndex);
+            }
+
+            foreach (RigidBody rb in rigidBodies)
+            {
+                scene.RegisterRigidBody(rb.Vertices, rb.VertexNormals, rb.Velocity, rb.InverseMasses, rb.Stiffness, rb.GroupIndex);
             }
 
             foreach (ConstraintSystem c in constraints)

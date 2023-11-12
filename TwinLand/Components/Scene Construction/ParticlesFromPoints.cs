@@ -35,19 +35,14 @@ namespace TwinLand
             pManager.AddNumberParameter("Mass", "mass",
               "Mass values for all particles or indicate one value for all particles", GH_ParamAccess.tree);
             pManager.AddBooleanParameter("Self Collision", "self collision",
-              "Set to true will calculate collision for the same group of particles", GH_ParamAccess.tree);
-            pManager.AddBooleanParameter("Is Fluid", "is fluid", "Set to true to compute particles as fluid",
-              GH_ParamAccess.tree);
-            pManager.AddIntegerParameter("GroupIndex", "groupIndex", "Index to identify a specific group later, if empty, then follow the tree branch index",
+              "Set to true will calculate collision for the same group of particles", GH_ParamAccess.tree, true);
+            pManager.AddIntegerParameter("Group Index", "group index", "Index to identify a specific group later, if empty, then follow the tree branch index",
               GH_ParamAccess.tree);
 
-            pManager[1].Optional = true;
-            pManager[2].Optional = true;
-            pManager[3].Optional = true;
-            pManager[4].Optional = true;
-            pManager[5].Optional = true;
-
-            pManager[1].DataMapping = GH_DataMapping.Graft;
+            for (int i = 1; i < pManager.ParamCount; i++)
+            {
+                pManager[i].Optional = true;
+            }
         }
 
         /// <summary>
@@ -65,24 +60,22 @@ namespace TwinLand
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            GH_Structure<GH_Point> pointsTree = new GH_Structure<GH_Point>();
+            GH_Structure<GH_Point> pointTree = new GH_Structure<GH_Point>();
             GH_Structure<GH_Vector> velocityTree = new GH_Structure<GH_Vector>();
             GH_Structure<GH_Number> massTree = new GH_Structure<GH_Number>();
             GH_Structure<GH_Boolean> selfCollisionTree = new GH_Structure<GH_Boolean>();
-            GH_Structure<GH_Boolean> isFluidTree = new GH_Structure<GH_Boolean>();
             GH_Structure<GH_Integer> groupIndexTree = new GH_Structure<GH_Integer>();
 
-            DA.GetDataTree("Points", out pointsTree);
+            DA.GetDataTree("Points", out pointTree);
             DA.GetDataTree("Velocities", out velocityTree);
             DA.GetDataTree("Mass", out massTree);
             DA.GetDataTree("Self Collision", out selfCollisionTree);
-            DA.GetDataTree("Is Fluid", out isFluidTree);
-            DA.GetDataTree("GroupIndex", out groupIndexTree);
+            DA.GetDataTree("Group Index", out groupIndexTree);
 
             #region clean up tree
-            if (!pointsTree.IsEmpty)
+            if (!pointTree.IsEmpty)
             {
-                pointsTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
+                pointTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
             }
             if (!velocityTree.IsEmpty)
             {
@@ -96,20 +89,16 @@ namespace TwinLand
             {
                 selfCollisionTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
             }
-            if (!isFluidTree.IsEmpty)
-            {
-                isFluidTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
-            }
             if (!groupIndexTree.IsEmpty)
             {
                 groupIndexTree.Simplify(GH_SimplificationMode.CollapseAllOverlaps);
             }
 
-            if (pointsTree.Branches.Count == 1)
+            if (pointTree.Branches.Count == 1)
             {
                 GH_Structure<GH_Point> pT = new GH_Structure<GH_Point> ();
-                pT.AppendRange(pointsTree.Branches[0], new GH_Path(0));
-                pointsTree = pT;
+                pT.AppendRange(pointTree.Branches[0], new GH_Path(0));
+                pointTree = pT;
             }
             if (velocityTree.Branches.Count == 1)
             {
@@ -129,12 +118,6 @@ namespace TwinLand
                 sT.AppendRange(selfCollisionTree.Branches[0], new GH_Path(0));
                 selfCollisionTree = sT;
             }
-            if (isFluidTree.Branches.Count == 1)
-            {
-                GH_Structure<GH_Boolean> fT = new GH_Structure<GH_Boolean>();
-                fT.AppendRange(isFluidTree.Branches[0], new GH_Path(0));
-                isFluidTree = fT;
-            }
             if (groupIndexTree.Branches.Count == 1)
             {
                 GH_Structure<GH_Integer> gT = new GH_Structure<GH_Integer>();
@@ -146,16 +129,16 @@ namespace TwinLand
             List<FlexParticle> particles = new List<FlexParticle>();
 
             // loop through input points tree
-            for (int i = 0; i < pointsTree.PathCount; i++)
+            for (int i = 0; i < pointTree.PathCount; i++)
             {
                 GH_Path path = new GH_Path(i);
-                for (int j = 0; j < pointsTree.get_Branch(path).Count; j++)
+                for (int j = 0; j < pointTree.get_Branch(path).Count; j++)
                 {
                     // convert location xyz value into particles
                     float[] pos = new float[3]
                     {
-            (float)pointsTree.get_DataItem(path, j).Value.X, (float)pointsTree.get_DataItem(path, j).Value.Y,
-            (float)pointsTree.get_DataItem(path, j).Value.Z
+            (float)pointTree.get_DataItem(path, j).Value.X, (float)pointTree.get_DataItem(path, j).Value.Y,
+            (float)pointTree.get_DataItem(path, j).Value.Z
                     };
 
                     // convert velocity xyz vector into particles
@@ -210,17 +193,6 @@ namespace TwinLand
 
                     // convert isFluid booleans to all particles
                     bool isFluid = false;
-                    if (isFluidTree.PathExists(path))
-                    {
-                        if (j < isFluidTree.get_Branch(path).Count)
-                        {
-                            isFluid = isFluidTree.get_DataItem(path, j).Value;
-                        }
-                        else
-                        {
-                            isFluid = isFluidTree.get_DataItem(path, 0).Value;
-                        }
-                    }
 
                     // convert group index to particles
                     int groupIndex = i;

@@ -123,7 +123,7 @@ namespace FlexCLI {
 
 		TimeStamp = TimeStamp = System::DateTime::Now.Minute * 60000 + System::DateTime::Now.Second * 1000 + System::DateTime::Now.Millisecond;
 	}
-
+	
 	///<summary>
 	///Specify one group of fluid particles
 	///</summary>
