@@ -784,7 +784,7 @@ namespace FlexCLI {
 		str += "\nNumClothParticles = " + ClothIndices->Count;
 		str += "\nNumDynamicTriangles = " + DynamicTriangleIndices->Count / 3;
 		str += "\nNumInflatables = " + NumInflatables;
-		str += "\n\nTimeStamp = " + TimeStamp.ToString();
+		str += "\n\nTimeStamp = " + TimeStamp.ToString() + "\n";
 		return str;
 	}
 }

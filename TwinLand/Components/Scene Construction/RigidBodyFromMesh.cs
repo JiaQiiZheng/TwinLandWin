@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Eto.Forms;
 using Grasshopper.Kernel;
+using Rhino.FileIO;
 using Rhino.Geometry;
 
 namespace TwinLand.Components.Scene_Construction
@@ -85,16 +86,28 @@ namespace TwinLand.Components.Scene_Construction
                     normals.Add(mesh.Normals[j].Y);
                     normals.Add(mesh.Normals[j].Z);
 
-                    double mass = 1.0 / vertexCount;
+                    //double mass = 1.0 / vertexCount;
+                    //if (masses.Count == 1)
+                    //{
+                    //    mass = masses[0] / vertexCount;
+                    //}
+                    //else if (masses.Count > i)
+                    //{
+                    //    mass = masses[i] / vertexCount;
+                    //}
+                    double mass = 1.0;
                     if (masses.Count == 1)
                     {
-                        mass = masses[0] / vertexCount;
+                        mass = masses[0];
                     }
                     else if (masses.Count > i)
                     {
-                        mass = masses[i] / vertexCount;
+                        mass = masses[i];
                     }
-                    inverseMasses.Add((float)(1.0 / Math.Max(mass, 0.00000000001)));
+
+                    inverseMasses.Add((float)(1.0 / (Math.Max(mass, 0.00000000001) * vertexCount)));
+
+                    Debug.WriteLine(Math.Max(mass, 0.00000000001) * vertexCount);
                 }
 
                 float[] velocity = new float[3] { 0.0f, 0.0f, 0.0f };
