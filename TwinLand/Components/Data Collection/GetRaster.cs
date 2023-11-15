@@ -412,7 +412,7 @@ namespace TwinLand
 
         // default raster resolution selection
         private static string resolutionLevel = "max";
-        private int resolutionValue = 1024;
+        private int resolutionValue = 2048;
 
         // dynamic message in component
         private string[] dynamicMessage = new string[2] { JObject.Parse(TwinLand.Convert.GetEndpoints())["REST Raster"][0]["service"].ToString(), resolutionLevel };
@@ -420,8 +420,11 @@ namespace TwinLand
         public override bool Write(GH_IWriter writer)
         {
             writer.SetString("Source_Raster", rasterSource);
-            writer.SetString("Resolution", resolutionLevel);
+            writer.SetString("Resolution_Level", resolutionLevel);
+            writer.SetString("Resolution_Value", resolutionValue.ToString());
+
             return base.Write(writer);
+
         }
         public override bool Read(GH_IReader reader)
         {
@@ -429,9 +432,20 @@ namespace TwinLand
             {
                 rasterSource = reader.GetString("Source_Raster");
             }
-            if (reader.ItemExists("Resolution"))
+            if (reader.ItemExists("Resolution_Level"))
             {
-                resolutionLevel = reader.GetString("Resolution");
+                resolutionLevel = reader.GetString("Resolution_Level");
+            }
+            if (reader.ItemExists("Resolution_Value"))
+            {
+                try
+                {
+                    resolutionValue = Int32.Parse(reader.GetString("Resolution_Value"));
+                }
+                catch (Exception)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Failed to parse Resolution Level to Resolution Value");
+                }
             }
             return base.Read(reader);
         }

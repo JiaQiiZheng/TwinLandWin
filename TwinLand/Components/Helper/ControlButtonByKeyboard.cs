@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using GH_IO.Serialization;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
@@ -59,16 +60,61 @@ namespace TwinLand.Components.Helper
                 Instances.DocumentEditor.KeyUp += new KeyEventHandler(KeyUpEventHandler);
             }
 
-            this.Message = $"Keyboard: {key}";
+            this.Message = $"Keyboard: {selectedKey}";
 
             DA.SetData("Log", _btn.ButtonDown ? "Button Down" : "Button Up");
         }
-        
+
+        /// <summary>
+        /// Append additional menus
+        /// </summary>
+        /// <param name="menu"></param>
+        protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+        {
+            ToolStripMenuItem root = new ToolStripMenuItem("Select Hot Key");
+            for (int i = 1; i <= 12; i++)
+            {
+                string keyName = $"F{i}";
+                ToolStripMenuItem key = new ToolStripMenuItem(keyName);
+                key.Tag = keyName;
+                key.Checked = IsKeySelected(keyName);
+                key.Click += KeyItemOnClicks;
+
+                root.DropDownItems.Add(key);
+            }
+
+            menu.Items.Add(root);
+
+            base.AppendAdditionalComponentMenuItems(menu);
+        }
+
+        private bool IsKeySelected(string keyName)
+        {
+            return keyName.Equals(selectedKey);
+        }
+
+        private void KeyItemOnClicks(object sender, EventArgs eventArgs)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item == null) return;
+            string label = item.Tag as string;
+            if (IsKeySelected(label)) return;
+
+            RecordUndoEvent("Select Key");
+            selectedKey = label;
+            KeysConverter kc = new KeysConverter();
+            key = (Keys)kc.ConvertFromString(selectedKey);
+
+            this.Message = $"Keyboard: {label}";
+            ExpireSolution(true);
+        }
+
         /// <summary>
         /// Dynamic variables
         /// </summary>
         GH_ButtonObject _btn = new GH_ButtonObject();
         Keys key = Keys.F7;
+        string selectedKey = "F7";
         
         /// <summary>
         /// Additional methods
@@ -87,6 +133,23 @@ namespace TwinLand.Components.Helper
             if (e.KeyCode != key || !_btn.ButtonDown) return;
             _btn.ButtonDown = false;
             _btn.ExpireSolution(false);
+        }
+
+        public override bool Write(GH_IWriter writer)
+        {
+            writer.SetString("HotKey", selectedKey);
+            return base.Write(writer);
+        }
+
+        public override bool Read(GH_IReader reader)
+        {
+            if (reader.ItemExists("HotKey"))
+            {
+                selectedKey = reader.GetString("HotKey");
+                KeysConverter kc = new KeysConverter();
+                key = (Keys)kc.ConvertFromString(selectedKey);
+            }
+            return base.Read(reader);
         }
 
         /// <summary>

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Eto.Forms;
 using Grasshopper.Kernel;
-using Rhino.FileIO;
 using Rhino.Geometry;
 
 namespace TwinLand.Components.Scene_Construction
@@ -25,10 +23,13 @@ namespace TwinLand.Components.Scene_Construction
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddMeshParameter("Mesh", "mesh", "Mesh as rigid body", GH_ParamAccess.list);
+            pManager.AddMeshParameter("Preview Mesh", "preview mesh", "If input reduced mesh, this allows you to preview mesh with higher resolution.", GH_ParamAccess.list);
             pManager.AddVectorParameter("Velocity", "velocity", "", GH_ParamAccess.list, new Vector3d(0.0, 0.0, 0.0));
             pManager.AddNumberParameter("Mass", "mass", "", GH_ParamAccess.list, new List<double> { 1.0 });
             pManager.AddNumberParameter("Stiffness", "stiffness", "", GH_ParamAccess.list, new List<double> { 1.0 });
             pManager.AddIntegerParameter("Group Index", "group index", "", GH_ParamAccess.list, new List<int> { 0 });
+
+            pManager[1].Optional = true;
         }
 
         /// <summary>
@@ -46,24 +47,31 @@ namespace TwinLand.Components.Scene_Construction
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             List<Mesh> meshes = new List<Mesh>();
+            List<Mesh> previewMeshes = new List<Mesh>();
             List<Vector3d> velocities = new List<Vector3d>();
             List<double> masses = new List<double>();
             List<double> stiffnesses = new List<double>();
             List<int> groupIndices = new List<int>();
 
             if (!DA.GetDataList("Mesh", meshes)) return;
+            DA.GetDataList("Preview Mesh", previewMeshes);
             DA.GetDataList("Velocity", velocities);
             DA.GetDataList("Mass", masses);
             DA.GetDataList("Stiffness", stiffnesses);
             DA.GetDataList("Group Index", groupIndices);
+
+            if(previewMeshes.Count>0 && previewMeshes.Count != meshes.Count)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Mesh and preview mesh inputs need to be match.");
+                return;
+            }
 
             List<RigidBody> rigidBodies = new List<RigidBody>();
 
             for (int i = 0; i < meshes.Count; i++)
             {
                 Mesh mesh = new Mesh();
-
-                // Simplify meshes
+                
                 mesh.Vertices.AddVertices(meshes[i].Vertices);
                 mesh.Faces.AddFaces(meshes[i].Faces);
 
@@ -86,15 +94,6 @@ namespace TwinLand.Components.Scene_Construction
                     normals.Add(mesh.Normals[j].Y);
                     normals.Add(mesh.Normals[j].Z);
 
-                    //double mass = 1.0 / vertexCount;
-                    //if (masses.Count == 1)
-                    //{
-                    //    mass = masses[0] / vertexCount;
-                    //}
-                    //else if (masses.Count > i)
-                    //{
-                    //    mass = masses[i] / vertexCount;
-                    //}
                     double mass = 1.0;
                     if (masses.Count == 1)
                     {
@@ -105,9 +104,7 @@ namespace TwinLand.Components.Scene_Construction
                         mass = masses[i];
                     }
 
-                    inverseMasses.Add((float)(1.0 / (Math.Max(mass, 0.00000000001) * vertexCount)));
-
-                    Debug.WriteLine(Math.Max(mass, 0.00000000001) * vertexCount);
+                    inverseMasses.Add((float)(1.0 / (Math.Max(mass, 0.00000000001))));
                 }
 
                 float[] velocity = new float[3] { 0.0f, 0.0f, 0.0f };
@@ -133,7 +130,17 @@ namespace TwinLand.Components.Scene_Construction
                 else if (groupIndices.Count > i) groupIndex = groupIndices[i];
 
                 RigidBody rb = new RigidBody(vertices.ToArray(), velocity, normals.ToArray(), inverseMasses.ToArray(), stiffness, groupIndex);
-                rb.Mesh = mesh;
+
+                // Encode mesh into the rigid body
+                if (previewMeshes.Count > i)
+                {
+                    rb.Mesh = previewMeshes[i];
+                }
+                else
+                {
+                    rb.Mesh = mesh;
+                }
+                
                 rigidBodies.Add(rb);
             }
 

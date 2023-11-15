@@ -10,7 +10,6 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Grasshopper.Kernel.Types.Transforms;
 using MIConvexHull;
-using OsmSharp.IO.PBF;
 using Rhino;
 using Rhino.Geometry;
 using Rhino.Geometry.Intersect;

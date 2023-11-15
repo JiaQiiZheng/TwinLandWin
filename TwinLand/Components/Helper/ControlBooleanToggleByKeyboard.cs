@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
+using GH_IO.Serialization;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
@@ -124,6 +125,23 @@ namespace TwinLand.Components.Helper
             if (e.KeyCode != key) return;
             _toogle.Value = !_toogle.Value;
             _toogle.ExpireSolution(true);
+        }
+
+        public override bool Write(GH_IWriter writer)
+        {
+            writer.SetString("HotKey", selectedKey);
+            return base.Write(writer);
+        }
+
+        public override bool Read(GH_IReader reader)
+        {
+            if (reader.ItemExists("HotKey"))
+            {
+                selectedKey = reader.GetString("HotKey");
+                KeysConverter kc = new KeysConverter();
+                key = (Keys)kc.ConvertFromString(selectedKey);
+            }
+            return base.Read(reader);
         }
 
         /// <summary>
