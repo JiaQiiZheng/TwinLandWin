@@ -1,4 +1,7 @@
+using Rhino.Geometry;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace TwinLand
 {
@@ -13,7 +16,13 @@ namespace TwinLand
                 return res;
             }
         }
+    }
 
-        
+    public class ZComparer : IComparer<Point3d>
+    {
+        public int Compare(Point3d p1, Point3d p2)
+        {
+            return p2.Z.CompareTo(p1.Z);
+        }
     }
 }

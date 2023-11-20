@@ -64,7 +64,7 @@ namespace FlexCLI {
 #pragma region fields
 		int NumIterations;					//!< Number of solver iterations to perform per-substep
 
-		float GravityX;						//!< Constant acceleration applied to all particles
+		float GravityX;						//!< Constant accelerateFactor applied to all particles
 		float GravityY;
 		float GravityZ;
 		float Radius;						//!< The maximum interaction radius for particles
@@ -80,14 +80,14 @@ namespace FlexCLI {
 		float SleepThreshold;				//!< Particles with a velocity magnitude < this threshold will be considered fixed
 
 		float MaxSpeed;						//!< The magnitude of particle velocity will be clamped to this value at the end of each step
-		float MaxAcceleration;				//!< The magnitude of particle acceleration will be clamped to this value at the end of each step (limits max velocity change per-second), useful to avoid popping due to large interpenetrations
+		float MaxAcceleration;				//!< The magnitude of particle accelerateFactor will be clamped to this value at the end of each step (limits max velocity change per-second), useful to avoid popping due to large interpenetrations
 
 		float ShockPropagation;				//!< Artificially decrease the mass of particles based on height from a fixed reference point, this makes stacks and piles converge faster
 		float Dissipation;					//!< Damps particle velocity based on how many particle contacts it has
 		float Damping;						//!< Viscous drag force, applies a force proportional, and opposite to the particle velocity
 
 											// cloth params
-		float WindX;							//!< Constant acceleration applied to particles that belong to dynamic triangles, drag needs to be > 0 for wind to affect triangles
+		float WindX;							//!< Constant accelerateFactor applied to particles that belong to dynamic triangles, drag needs to be > 0 for wind to affect triangles
 		float WindY;
 		float WindZ;
 		float Drag;							//!< Drag force applied to particles belonging to dynamic triangles, proportional to velocity^2*area in the negative velocity direction

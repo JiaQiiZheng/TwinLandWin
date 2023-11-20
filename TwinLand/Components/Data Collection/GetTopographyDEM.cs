@@ -279,9 +279,6 @@ namespace TwinLand
             dynamicMessage[1] = resolutionLevel;
             Message = GetMessage(dynamicMessage);
 
-            Debug.WriteLine(resolutionLevel);
-
-
             ExpireSolution(true);
         }
 
