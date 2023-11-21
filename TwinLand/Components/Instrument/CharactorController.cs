@@ -336,16 +336,6 @@ namespace TwinLand.Components.Instrument
             ExpireSolution(true);
         }
 
-        private void TurningSmooth(int smoothStep, double radians)
-        {
-            double turningStep = radians / smoothStep;
-            for (int i = 0; i < smoothStep; i++)
-            {
-                bodyDirection += turningStep;
-                ExpireSolution(true);
-            }
-        }
-
 
         /// <summary>
         /// Provides an Icon for the component.

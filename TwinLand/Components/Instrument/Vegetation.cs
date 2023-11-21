@@ -130,7 +130,10 @@ namespace TwinLand.Components.Instrument
                     profile.Translate(down);
 
                     Polyline profilePolyLine = profile.ToPolyline(0, 0, 0, double.MaxValue).ToPolyline();
-                    Mesh extrudeUp = ExtrudePolylineOneSide(profilePolyLine, new Vector3d(0, 0, 1), height_cur+depth_cur);
+                    Mesh extrudeUp = ExtrudePolylineOneSide(profilePolyLine, new Vector3d(0, 0, 1), height_cur);
+                    Mesh extrudeDown = ExtrudePolylineOneSide(profilePolyLine, new Vector3d(0, 0, -1), depth_cur);
+                    // Merge down root part into up body part
+                    extrudeUp.Append(extrudeDown);
                     extrudeUp = Triangulate(extrudeUp);
 
                     Polyline[] edges = extrudeUp.GetNakedEdges();
