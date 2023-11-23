@@ -123,7 +123,7 @@ namespace TwinLand
                         vertices[3 * i + 2] = m.Vertices[i].Z;
                     }
 
-                    for (int i = 0; i < m.Vertices.Count; i++)
+                    for (int i = 0; i < m.Vertices.Count && i<m.Faces.Count; i++)
                     {
                         faces[3 * i] = m.Faces[i].A;
                         faces[3 * i + 1] = m.Faces[i].B;

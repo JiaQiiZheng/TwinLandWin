@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Numerics;
 using System.Windows.Forms;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
@@ -45,6 +47,7 @@ namespace TwinLand.Components.Instrument
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddMeshParameter("Volumn Mesh", "volumn mesh", "", GH_ParamAccess.tree);
+            pManager.AddCurveParameter("Area", "area", "", GH_ParamAccess.tree);
         }
 
         /// <summary>
@@ -76,6 +79,7 @@ namespace TwinLand.Components.Instrument
             double tl = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
 
             GH_Structure<GH_Mesh> volumns = new GH_Structure<GH_Mesh>();
+            GH_Structure<GH_Curve> areas = new GH_Structure<GH_Curve>();
 
             for (int i = 0; i < settingOutCrvs.Branches.Count; i++)
             {
@@ -94,19 +98,19 @@ namespace TwinLand.Components.Instrument
 
                     if (alignment == 0)
                     {
-                        left = crv.Offset(Plane.WorldXY, thickness_cur, tl, CurveOffsetCornerStyle.Sharp);
+                        left = crv.Offset(Rhino.Geometry.Plane.WorldXY, thickness_cur, tl, CurveOffsetCornerStyle.Sharp);
                         right[0] = crv;
                     }
                     else if (alignment == 1)
                     {
                         // Offset to both sides
-                        left = crv.Offset(Plane.WorldXY, thickness_cur / 2, tl, CurveOffsetCornerStyle.Sharp);
-                        right = crv.Offset(Plane.WorldXY, -thickness_cur / 2, tl, CurveOffsetCornerStyle.Sharp);
+                        left = crv.Offset(Rhino.Geometry.Plane.WorldXY, thickness_cur / 2, tl, CurveOffsetCornerStyle.Sharp);
+                        right = crv.Offset(Rhino.Geometry.Plane.WorldXY, -thickness_cur / 2, tl, CurveOffsetCornerStyle.Sharp);
                     }
                     else
                     {
                         left[0] = crv;
-                        right = crv.Offset(Plane.WorldXY, -thickness_cur, tl, CurveOffsetCornerStyle.Sharp);
+                        right = crv.Offset(Rhino.Geometry.Plane.WorldXY, -thickness_cur, tl, CurveOffsetCornerStyle.Sharp);
                     }
 
                     if (left.Length != 1 || right.Length != 1) continue;
@@ -124,30 +128,23 @@ namespace TwinLand.Components.Instrument
                     if (joined.Length != 1) continue;
                     Curve profile = joined[0];
 
-                    // Extrude profile as enclosed mesh
-                    Vector3d down = new Vector3d(0, 0, -depth);
+                    Surface extrudeUp = Extrusion.CreateExtrusion(profile, new Vector3d(0, 0, height_cur));
+                    Surface extrudeDown = Extrusion.CreateExtrusion(profile, new Vector3d(0, 0, -depth_cur));
 
-                    profile.Translate(down);
+                    MeshingParameters mp = new MeshingParameters(1.0, height_cur/10);
+                    Mesh meshUp = Mesh.CreateFromSurface(extrudeUp, mp);
+                    Mesh meshDown = Mesh.CreateFromSurface(extrudeDown, mp);
 
-                    Polyline profilePolyLine = profile.ToPolyline(0, 0, 0, double.MaxValue).ToPolyline();
-                    Mesh extrudeUp = ExtrudePolylineOneSide(profilePolyLine, new Vector3d(0, 0, 1), height_cur);
-                    Mesh extrudeDown = ExtrudePolylineOneSide(profilePolyLine, new Vector3d(0, 0, -1), depth_cur);
-                    // Merge down root part into up body part
-                    extrudeUp.Append(extrudeDown);
-                    extrudeUp = Triangulate(extrudeUp);
+                    Mesh merged = new Mesh();
+                    merged.Append(new Mesh[] { meshUp, meshDown });
 
-                    Polyline[] edges = extrudeUp.GetNakedEdges();
-
-                    foreach (Polyline edge in edges)
-                    {
-                        extrudeUp.Append(Mesh.CreateFromClosedPolyline(edge));
-                    }
-
-                    volumns.Append(new GH_Mesh(extrudeUp), path);
+                    volumns.Append(new GH_Mesh(merged), path);
+                    areas.Append(new GH_Curve(profile), path);
                 }
             }
 
             DA.SetDataTree(0, volumns);
+            DA.SetDataTree(1, areas);
         }
 
         /// <summary>

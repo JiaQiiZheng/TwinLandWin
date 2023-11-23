@@ -18,9 +18,9 @@ namespace TwinLand.Components.Instrument
           : base("TwinLand Timer", "TL timer",
               "Description", "Instrument")
         {
-            timer = new System.Timers.Timer(interval); // 1000 milliseconds = 1 second
-            timer.Elapsed += OnTimerElapsed;
-            timer.Start();
+            //timer = new System.Timers.Timer(interval); // 1000 milliseconds = 1 second
+            //timer.Elapsed += OnTimerElapsed;
+            //timer.Start();
         }
 
         protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -54,7 +54,11 @@ namespace TwinLand.Components.Instrument
             DA.GetData("Active", ref active);
             DA.GetData("Reset", ref reset);
 
-            if (!active) return;
+            if (!active)
+            {
+                timer.Stop();
+                return;
+            }
 
             // Check if interval input is being changed
             if(cur_interval != interval)
@@ -91,7 +95,7 @@ namespace TwinLand.Components.Instrument
             timer = new System.Timers.Timer(interval);
             this.interval = newInterval;
             timer.Elapsed += OnTimerElapsed;
-        }
+        }   
 
         private void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {

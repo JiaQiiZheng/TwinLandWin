@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using Grasshopper.Kernel;
+using Rhino.Display;
 using Rhino.Geometry;
 
 namespace TwinLand.Components.Mapping
@@ -25,6 +26,7 @@ namespace TwinLand.Components.Mapping
         {
             pManager.AddCurveParameter("Boundary", "boundary", "", GH_ParamAccess.item);
             pManager.AddCurveParameter("Mask Area", "mask area", "", GH_ParamAccess.list);
+            pManager.AddColourParameter("Color", "color", "", GH_ParamAccess.item, Color.Black);
             pManager.AddTextParameter("Target Folder", "target folder", "", GH_ParamAccess.item);
             pManager.AddTextParameter("File Name", "file name", "", GH_ParamAccess.item);
             pManager.AddIntegerParameter("Resolution", "resolution", "", GH_ParamAccess.item, 2048);
@@ -46,18 +48,20 @@ namespace TwinLand.Components.Mapping
         {
             Curve boundary = null;
             List<Curve> maskAreas = new List<Curve>();
+            Color color = new Color();
             string targetFolder = String.Empty;
             string fileName = String.Empty;
             int resolution = 1024;
 
             if (!DA.GetData("Boundary", ref boundary)) return;
             if (!DA.GetDataList("Mask Area", maskAreas)) return;
+            DA.GetData("Color", ref color);
             if (!DA.GetData("Target Folder", ref targetFolder)) return;
             if (!DA.GetData("File Name", ref fileName)) return;
             DA.GetData("Resolution", ref resolution);
 
             // Draw a bitmap
-            Bitmap bmp = DrawMask(boundary, maskAreas, resolution);
+            Bitmap bmp = DrawMask(boundary, maskAreas, resolution, color);
 
             // Save the bitmap
             string filePath = System.IO.Path.Combine(targetFolder, fileName);
@@ -73,9 +77,9 @@ namespace TwinLand.Components.Mapping
         /// <param name="maskAreas"></param>
         /// <param name="resolution"></param>
         /// <returns></returns>
-        private Bitmap DrawMask(Curve boundary, List<Curve> maskAreas, int resolution)
+        private Bitmap DrawMask(Curve boundary, List<Curve> maskAreas, int resolution, Color color)
         {
-            Bitmap bmp = new Bitmap(resolution, resolution);
+            Bitmap bmp = new Bitmap(resolution, resolution, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
             Point3d min = boundary.GetBoundingBox(true).Min;
             Point3d max = boundary.GetBoundingBox(true).Max;
 
@@ -85,8 +89,6 @@ namespace TwinLand.Components.Mapping
             Point3d center = (min + max) / 2;
             Transform scale = Transform.Scale(new Plane(center, Vector3d.ZAxis), x, y, 1);
 
-            boundary.Transform(scale);
-
             // Draw a black mask
             using (Graphics graphics = Graphics.FromImage(bmp))
             {
@@ -95,17 +97,18 @@ namespace TwinLand.Components.Mapping
                 foreach (Curve area in maskAreas)
                 {
                     area.Transform(scale);
-
                     BoundingBox bb = area.GetBoundingBox(true);
 
-                    float start_x = (float)bb.Min.X + resolution / 2;
-                    float start_y = -(float)bb.Max.Y + resolution / 2;
+                    float start_x = (float)bb.Min.X - (float)center.X + resolution / 2;
+                    float start_y = -((float)bb.Max.Y - (float)center.Y) + resolution / 2;
                     double width = bb.Max.X - bb.Min.X;
                     double height = bb.Max.Y - bb.Min.Y;
 
-                    graphics.FillRectangle(Brushes.Black, start_x, start_y, (float)width, (float)height);
+                    graphics.FillRectangle(new SolidBrush(Color.FromArgb(color.A,color.R,color.G,color.B)), start_x, start_y, (float)width, (float)height);
                 }
             }
+
+            bmp.MakeTransparent(Color.Gray);
 
             return bmp;
         }

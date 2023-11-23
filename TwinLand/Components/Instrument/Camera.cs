@@ -107,6 +107,10 @@ namespace TwinLand.Components.Instrument
                         vp.SetCameraLocation(location, true);
                         vp.SetCameraDirection(direction, true);
                         vp.Camera35mmLensLength = lensLength;
+
+                        BoundingBox bb = BoundingBox.Unset;
+                        bb = new BoundingBox(target.X - distance, target.Y - distance, target.Z - distance, target.X + distance, target.Y + distance, target.Z + distance);
+                        vp.ZoomBoundingBox(bb);
                     }
                 }
 
@@ -138,19 +142,13 @@ namespace TwinLand.Components.Instrument
         {
             if (eventArgs.KeyData == Keys.Oemplus)
             {
-                for (int i = 0; i < 5; i++)
-                {
-                    zoomDistance -= (distance / 200);
-                    ExpireSolution(true);
-                }
+                zoomDistance -= (distance / 10);
+                ExpireSolution(true);
             }
             else if (eventArgs.KeyData == Keys.OemMinus)
             {
-                for (int i = 0; i < 5; i++)
-                {
-                    zoomDistance += (distance / 200);
-                    ExpireSolution(true);
-                }
+                zoomDistance += (distance / 10);
+                ExpireSolution(true);
             }
             else
             {
