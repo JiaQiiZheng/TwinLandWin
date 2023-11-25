@@ -54,7 +54,6 @@ namespace TwinLand.Components.Instrument
             double width = 1.0;
             double height = 1.0;
             int count = 1;
-            //double radius = 1.0;
             double randomFactor = 0.0;
             double velocity = 1.0;
             bool isRandom = true;
@@ -63,7 +62,6 @@ namespace TwinLand.Components.Instrument
             DA.GetData("Emitting Area Width", ref width);
             DA.GetData("Emitting Area Height", ref height);
             DA.GetData("Count", ref count);
-            //DA.GetData("Radius", ref radius);
             DA.GetData("Random Factor", ref randomFactor);
             DA.GetData("Velocity", ref velocity);
             DA.GetData("Is Random", ref isRandom);

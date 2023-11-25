@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Drawing;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using TwinLand.Utils;
@@ -34,6 +34,7 @@ namespace TwinLand.Components.Instrument
             pManager.AddPointParameter("Location", "location", "", GH_ParamAccess.item);
             pManager.AddMeshParameter("Body", "body", "", GH_ParamAccess.item);
             pManager.AddVectorParameter("Orientation", "orientation", "", GH_ParamAccess.item);
+            pManager.AddColourParameter("Color", "color", "", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -43,10 +44,13 @@ namespace TwinLand.Components.Instrument
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             if (!DA.GetData("Charactor", ref charactor)) return;
+            int [] argb = charactor.BodyColor[charactor.ColorIndex];
+            Color cur_color = Color.FromArgb(argb[0], argb[1], argb[2], argb[3]);
 
             DA.SetData("Location", charactor.BodyLocation);
             DA.SetData("Body", charactor.BodyStatus);
             DA.SetData("Orientation", charactor.Orientation);
+            DA.SetData("Color", cur_color);
         }
 
         /// <summary>

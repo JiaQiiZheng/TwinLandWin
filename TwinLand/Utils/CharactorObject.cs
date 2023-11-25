@@ -16,6 +16,8 @@ namespace TwinLand.Utils
         public double MovingSpeed { get; set; }
         public double TurningSpeed { get; set; }
         public Vector3d Orientation { get; set; }
+        public List<int[]> BodyColor { get; set; }
+        public int ColorIndex { get; set; }
 
         public CharactorObject()
         {
@@ -26,6 +28,8 @@ namespace TwinLand.Utils
             this.MovingSpeed = 100.0;
             this.TurningSpeed = 1.0;
             this.Orientation = Vector3d.XAxis;
+            this.ColorIndex = 0;
+            this.BodyColor = colors;
         }
 
         public CharactorObject(string name, List<Mesh> bodies, double movingSpeed, double turningSpeed, Vector3d orientation)
@@ -35,6 +39,12 @@ namespace TwinLand.Utils
             this.MovingSpeed = movingSpeed;
             this.TurningSpeed = turningSpeed;
             this.Orientation = orientation;
+            this.ColorIndex = 0;
+            this.BodyColor = colors;
         }
+
+        static int[] color_normal = new int[] { 180, 255, 0, 77 };
+        static int[] color_simulation = new int[] { 180, 0, 45, 120 };
+        List<int[]> colors = new List<int[]> { color_normal, color_simulation };
     }
 }

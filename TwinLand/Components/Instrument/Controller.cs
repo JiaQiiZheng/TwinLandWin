@@ -13,6 +13,7 @@ using TwinLand.Utils;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 using System.ComponentModel;
 using System.Timers;
+using Rhino.UI;
 
 namespace TwinLand.Components.Instrument
 {
@@ -99,8 +100,8 @@ namespace TwinLand.Components.Instrument
                 showStep = 0;
                 bodyLocation = birthLocation;
                 bodyDirection = Vector3d.VectorAngle(Vector3d.XAxis, charactor.Orientation);
-                cameraHeight = 6000;
-                cameraDistance = 18000;
+                cameraHeight = 4000;
+                cameraDistance = 12000;
                 DA.GetData("Charactor", ref charactor);
             }
 
@@ -115,6 +116,7 @@ namespace TwinLand.Components.Instrument
 
             back = -front;
 
+            // Adjust camera and viewport
             Instances.DocumentEditor.KeyDown -= new KeyEventHandler(KeyDownEventHandler);
             Instances.DocumentEditor.KeyDown += new KeyEventHandler(KeyDownEventHandler);
 
@@ -227,7 +229,6 @@ namespace TwinLand.Components.Instrument
 
             // Update instrument status
             DA.GetData("Instrument", ref instrument);
-
             DA.SetData("Charactor", charactor);
             DA.SetData("Instrument", instrument);
             DA.SetData("Camera Location", camera);
@@ -285,7 +286,7 @@ namespace TwinLand.Components.Instrument
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="eventArgs"></param>
-        void KeyDownEventHandler(Object sender, KeyEventArgs eventArgs)
+        private void KeyDownEventHandler(Object sender, KeyEventArgs eventArgs)
         {
             // Combo keys
             string keyStr = eventArgs.KeyData.ToString();
@@ -295,7 +296,7 @@ namespace TwinLand.Components.Instrument
                 turningSpeed = _turning;
                 if (instrumentToggle)
                 {
-                    instrument.PlanarPointEmitter.Trigger(instrument.PlanarPointEmitter.Plane);
+                    UpdateInstrument(instrument.PlanarPointEmitter.Plane);
                 }
             }
             else if (!keyStr.Contains(shift) && !emitting)
@@ -371,6 +372,33 @@ namespace TwinLand.Components.Instrument
                 instrumentToggle = !instrumentToggle;
                 instrument.PlanarPointEmitter.Active = instrumentToggle;
             }
+            // Adjust instrument
+            else if (eventArgs.KeyCode == Keys.U && instrumentToggle)
+            {
+                instrument.PlanarPointEmitter.Height += movingSpeed;
+                UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+            }
+            else if (eventArgs.KeyCode == Keys.J && instrumentToggle)
+            {
+                if (instrument.PlanarPointEmitter.Height > 100)
+                {
+                    instrument.PlanarPointEmitter.Height -= movingSpeed;
+                }
+                UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+            }
+            else if (eventArgs.KeyCode == Keys.H && instrumentToggle)
+            {
+                if (instrument.PlanarPointEmitter.Width > 100)
+                {
+                    instrument.PlanarPointEmitter.Width -= movingSpeed;
+                }
+                UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+            }
+            else if (eventArgs.KeyCode == Keys.K && instrumentToggle)
+            {
+                instrument.PlanarPointEmitter.Width += movingSpeed;
+                UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+            }
 
             // Instrument Schedule
             else if (eventArgs.KeyCode == Keys.I)
@@ -389,24 +417,37 @@ namespace TwinLand.Components.Instrument
             ExpireSolution(true);
         }
 
+
+
+        public void UpdateInstrument(Plane plane)
+        {
+            instrument.PlanarPointEmitter.Trigger(plane);
+        }
+
         public void Schedule(int interval, bool emitting)
         {
             timer.Interval = interval;
 
+            charactor.ColorIndex = 1;
+
             if (!emitting)
             {
-                timer.Stop();
+                timer.Enabled = false;
                 timer.Elapsed -= OnTimerElapsed;
+
+                charactor.ColorIndex = 0;
+
                 return;
             }
 
             timer.Start();
+            timer.Elapsed -= OnTimerElapsed;
             timer.Elapsed += OnTimerElapsed;
         }
 
         private void OnTimerElapsed(Object sender, ElapsedEventArgs e)
         {
-            this.instrument.PlanarPointEmitter.Trigger(instrument.PlanarPointEmitter.EmittingBoundary.Plane); ;
+            this.instrument.PlanarPointEmitter.Trigger(instrument.PlanarPointEmitter.EmittingBoundary.Plane);
             Grasshopper.Instances.ActiveCanvas.Invoke(new Action(() => { ExpireSolution(true); }));
         }
 

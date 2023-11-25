@@ -16,6 +16,32 @@ namespace TwinLand
                 return res;
             }
         }
+
+        public static int Adjust(int value, int min, int max)
+        {
+            value = Math.Max(1, value);
+            value = Math.Min(10, value);
+
+            return value;
+        }
+        
+        public static void UnifyCLosedCurveOrientation(Curve curve, bool isClockwise)
+        {
+            if (isClockwise)
+            {
+                if (curve.ClosedCurveOrientation(Plane.WorldXY) != CurveOrientation.Clockwise)
+                {
+                    curve.Reverse();
+                }
+            }
+            else
+            {
+                if (curve.ClosedCurveOrientation(Plane.WorldXY) == CurveOrientation.Clockwise)
+                {
+                    curve.Reverse();
+                }
+            }
+        }
     }
 
     public class ZComparer : IComparer<Point3d>

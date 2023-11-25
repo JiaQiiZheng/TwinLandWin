@@ -8,6 +8,7 @@ using System.Diagnostics;
 using Rhino.DocObjects;
 using System.Windows.Forms;
 using Grasshopper;
+using Rhino.UI;
 
 namespace TwinLand.Components.Instrument
 {
@@ -32,9 +33,7 @@ namespace TwinLand.Components.Instrument
             pManager.AddNumberParameter("Lens Length", "lens length", "", GH_ParamAccess.item, 24);
             pManager.AddIntegerParameter("Perspective", "perspective", "0-isometric view, 1-perspective view, 2-2d-perspective view", GH_ParamAccess.item, 1);
             pManager.AddBooleanParameter("Viewport Update", "viewport update", "", GH_ParamAccess.item, true);
-            pManager.AddIntegerParameter("Cruise Mode", "cruise mode", "", GH_ParamAccess.item, 1);
-            pManager.AddNumberParameter("Rotation Speed", "rotation speed", "", GH_ParamAccess.item, 0.1);
-            pManager.AddBooleanParameter("Cruise Active", "cruise active", "", GH_ParamAccess.item, false);
+            pManager.AddBooleanParameter("Zoom Active", "zoom active", "", GH_ParamAccess.item, true);
             pManager.AddBooleanParameter("Active", "active", "", GH_ParamAccess.item, true);
         }
 
@@ -58,9 +57,7 @@ namespace TwinLand.Components.Instrument
             double lensLength = 35.0;
             int perspective = 1;
             bool viewportUpdate = true;
-            int cruiseMode = 1;
-            double rotationSpeed = 0.1;
-            bool cruiseActive = false;
+            bool zoomActive = true;
             bool active = true;
 
             if (!DA.GetData("Camera Location", ref location)) return;
@@ -68,58 +65,56 @@ namespace TwinLand.Components.Instrument
             DA.GetData("Lens Length", ref lensLength);
             DA.GetData("Perspective", ref perspective);
             DA.GetData("Viewport Update", ref viewportUpdate);
-            DA.GetData("Cruise Mode", ref cruiseMode);
-            DA.GetData("Rotation Speed", ref rotationSpeed);
-            DA.GetData("Cruise Active", ref cruiseActive);
+            DA.GetData("Zoom Active", ref zoomActive);
             DA.GetData("Active", ref active);
+
+            if (!active) return;
 
             RhinoViewport vp = RhinoDoc.ActiveDoc.Views.ActiveView.ActiveViewport;
             distance = location.DistanceTo(target);
             direction = new Vector3d(target.X - location.X, target.Y - location.Y, target.Z - location.Z);
 
-            if (active)
+            // Keyboard events
+            Instances.DocumentEditor.KeyDown -= new KeyEventHandler(KeyDownEventHandler);
+            Instances.DocumentEditor.KeyDown += new KeyEventHandler(KeyDownEventHandler);
+
+            // Mouse events
+
+            // Adjust camera
+            if (perspective == 0)
             {
-                Instances.DocumentEditor.KeyDown -= new KeyEventHandler(KeyDownEventHandler);
-                Instances.DocumentEditor.KeyDown += new KeyEventHandler(KeyDownEventHandler);
-
-                if (perspective == 0)
+                vp.ChangeToParallelProjection(true);
+                BoundingBox bb = BoundingBox.Unset;
+                if (viewportUpdate)
                 {
-                    vp.ChangeToParallelProjection(true);
-                    BoundingBox bb = BoundingBox.Unset;
-                    if (viewportUpdate)
-                    {
-                        bb = new BoundingBox(target.X - distance, target.Y - distance, target.Z - distance, target.X + distance, target.Y + distance, target.Z + distance);
-                        vp.SetCameraLocation(location, true);
-                        vp.SetCameraDirection(direction, true);
-                    }
-                    else
-                    {
-                        bb = new BoundingBox(target.X - zoomDistance, target.Y - zoomDistance, target.Z - zoomDistance, target.X + zoomDistance, target.Y + zoomDistance, target.Z + zoomDistance);
-                    }
+                    bb = new BoundingBox(target.X - distance, target.Y - distance, target.Z - distance, target.X + distance, target.Y + distance, target.Z + distance);
+                    vp.SetCameraLocation(location, true);
+                    vp.SetCameraDirection(direction, true);
+                }
+                else
+                {
+                    bb = new BoundingBox(target.X - zoomDistance, target.Y - zoomDistance, target.Z - zoomDistance, target.X + zoomDistance, target.Y + zoomDistance, target.Z + zoomDistance);
+                }
 
+                if (zoomActive)
+                {
                     vp.ZoomBoundingBox(bb);
                 }
-                else if (perspective == 1)
+            }
+            else if (perspective == 1)
+            {
+                vp.ChangeToPerspectiveProjection(true, lensLength);
+                if (viewportUpdate)
                 {
-                    vp.ChangeToPerspectiveProjection(true, lensLength);
-                    if (viewportUpdate)
-                    {
-                        vp.SetCameraLocation(location, true);
-                        vp.SetCameraDirection(direction, true);
-                        vp.Camera35mmLensLength = lensLength;
+                    vp.SetCameraLocation(location, true);
+                    vp.SetCameraDirection(direction, true);
+                    vp.Camera35mmLensLength = lensLength;
 
+                    if (zoomActive)
+                    {
                         BoundingBox bb = BoundingBox.Unset;
                         bb = new BoundingBox(target.X - distance, target.Y - distance, target.Z - distance, target.X + distance, target.Y + distance, target.Z + distance);
                         vp.ZoomBoundingBox(bb);
-                    }
-                }
-
-                if (cruiseActive)
-                {
-                    if (cruiseMode == 1)
-                    {
-                        vp.KeyboardRotate(true, RhinoMath.ToRadians(rotationSpeed));
-                        ExpireSolution(true);
                     }
                 }
             }
@@ -143,13 +138,14 @@ namespace TwinLand.Components.Instrument
             if (eventArgs.KeyData == Keys.Oemplus)
             {
                 zoomDistance -= (distance / 10);
-                ExpireSolution(true);
+                //ExpireSolution(true);
             }
             else if (eventArgs.KeyData == Keys.OemMinus)
             {
                 zoomDistance += (distance / 10);
-                ExpireSolution(true);
+                //ExpireSolution(true);
             }
+
             else
             {
                 return;
