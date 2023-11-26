@@ -118,7 +118,7 @@ namespace TwinLand.Components.Generator
                 bound_flatten.Add(Curve.ProjectToPlane(crv, Plane.WorldXY));
             }
             Curve[] bounds = null;
-            var region = Curve.CreateBooleanRegions(bound_flatten.ToArray(), Plane.WorldXY, true, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+            var region = Curve.CreateBooleanRegions(bound_flatten.ToArray(), Plane.WorldXY, true, tl);
             List<Curve> regions = new List<Curve>();
             for (int i = 0; i < region.PlanarCurveCount; i++)
             {
@@ -152,7 +152,7 @@ namespace TwinLand.Components.Generator
                     for (int k = 0; k < xs.Count; k++)
                     {
                         Point3d pt = new Point3d(xs[k], ys[j], 0);
-                        PointContainment result = bound.Contains(pt);
+                        PointContainment result = bound.Contains(pt, Plane.WorldXY, tl);
                         if (strict)
                         {
                             if (result == PointContainment.Inside)
@@ -241,9 +241,9 @@ namespace TwinLand.Components.Generator
             //}
 
             // project onto geometry
-            Point3d[] projected_brep = Intersection.ProjectPointsToBreps(breps, grid, Plane.WorldXY.ZAxis, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+            Point3d[] projected_brep = Intersection.ProjectPointsToBreps(breps, grid, Plane.WorldXY.ZAxis, tl);
 
-            Point3d[] projected_mesh = Intersection.ProjectPointsToMeshes(meshes, grid, Plane.WorldXY.ZAxis, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+            Point3d[] projected_mesh = Intersection.ProjectPointsToMeshes(meshes, grid, Plane.WorldXY.ZAxis, tl);
 
             List<Point3d> projected_list = new List<Point3d>();
             if (projected_brep != null)
@@ -263,7 +263,7 @@ namespace TwinLand.Components.Generator
             }
 
             Point3d[] projected = projected_list.ToArray();
-            Point3d.CullDuplicates(projected, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance);
+            Point3d.CullDuplicates(projected, tl);
 
 
             // Lift projected point times based on thickness
@@ -402,6 +402,7 @@ namespace TwinLand.Components.Generator
         /// <summary>
         /// Dynamic variables
         /// </summary>
+        double tl = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
         Random rd = new Random();
         GH_Structure<GH_Mesh> recordMesh = new GH_Structure<GH_Mesh>();
         GH_Structure<GH_Integer> recordConstraintIndices = new GH_Structure<GH_Integer>();

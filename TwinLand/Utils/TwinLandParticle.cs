@@ -9,7 +9,7 @@ namespace TwinLand.Utils
 {
     public class TwinLandParticle
     {
-        // properties
+        // Properties
         public double MaximumWidth { get; set; }
         public double MaximumLength { get; set; }
         public double MaximumHeight { get; set; }
@@ -23,7 +23,7 @@ namespace TwinLand.Utils
         public Point3d[] Vertices { get; }
         public double SizeEvenFactor { get; set; }
 
-        // constructors
+        // Constructors
         public TwinLandParticle()
         {
             this.MaximumWidth = 1.0;
@@ -42,7 +42,7 @@ namespace TwinLand.Utils
             this.VertexCount = vertextCount;
             this.SizeEvenFactor = sizeEvenFactor;
 
-            // implement particle parameters to generate an instance
+            // Implement particle parameters to generate an instance
         }
     }
 }

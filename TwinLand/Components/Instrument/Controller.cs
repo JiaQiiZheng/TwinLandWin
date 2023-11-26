@@ -9,11 +9,11 @@ using System.Windows.Forms;
 using Grasshopper;
 using System.Diagnostics;
 using Rhino.Geometry.Intersect;
-using TwinLand.Utils;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 using System.ComponentModel;
 using System.Timers;
 using Rhino.UI;
+using TwinLand.Components.Instrument.Charactor;
 
 namespace TwinLand.Components.Instrument
 {
@@ -269,7 +269,6 @@ namespace TwinLand.Components.Instrument
         Keys z = Keys.Z;
         Keys f = Keys.F;
         Keys c = Keys.C;
-        Keys v = Keys.V;
         string shift = Keys.Shift.ToString();
 
         Point3d bodyLocation;
@@ -407,7 +406,31 @@ namespace TwinLand.Components.Instrument
                 this.Schedule(200, emitting);
             }
 
-            // Jumpping
+            // Land Brush adjustment
+            else if (eventArgs.KeyCode == Keys.V)
+            {
+                instrument.LandBrush.UpdateZone(bodyLocation);
+            }
+            else if (eventArgs.KeyCode == Keys.M)
+            {
+                instrument.LandBrush.Radius += movingSpeed;
+                instrument.LandBrush.UpdateZoneRadius();
+            }
+            else if (eventArgs.KeyCode == Keys.N && instrument.LandBrush.Radius > movingSpeed)
+            {
+                instrument.LandBrush.Radius -= movingSpeed;
+                instrument.LandBrush.UpdateZoneRadius();
+            }
+
+            // Drop materials
+            if (!keyStr.Contains(Keys.B.ToString()))
+            {
+                instrument.LandBrush.Stroke.Clear();
+            }
+            else if (eventArgs.KeyCode == Keys.B)
+            {
+                instrument.LandBrush.UpdateStroke(tl);
+            }
 
             else
             {

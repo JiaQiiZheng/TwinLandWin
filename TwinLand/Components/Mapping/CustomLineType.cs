@@ -79,6 +79,10 @@ namespace TwinLand.Components.Mapping
 
             // Adjust dash pattern in case output is too heavy
             double total = crv.GetLength();
+
+            // Make sure crv domain match to its length
+            crv.Domain = new Interval(0, total);
+
             int maxSegCount = 1000;
             dashLen = Math.Max(dashLen, total / maxSegCount);
             gapLen = Math.Max(gapLen, total / maxSegCount);
