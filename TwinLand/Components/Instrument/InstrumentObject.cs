@@ -10,20 +10,21 @@ namespace TwinLand.Components.Instrument
 {
     public class InstrumentObject
     {
-        public PlanarPointEmitter PlanarPointEmitter { get; set; }
+        public PlanarEmitter PlanarEmitter { get; set; }
         public LandBrush LandBrush { get; set; }
+        // For instrument to switch materials
 
         
         // Constructors
         public InstrumentObject()
         {
-            PlanarPointEmitter = null;
+            PlanarEmitter = null;
             LandBrush = null;
         }
 
-        public InstrumentObject(PlanarPointEmitter ppe)
+        public InstrumentObject(PlanarEmitter ppe)
         {
-            PlanarPointEmitter = ppe;
+            PlanarEmitter = ppe;
         }
 
         public InstrumentObject(LandBrush lb)

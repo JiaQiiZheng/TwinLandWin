@@ -48,9 +48,9 @@ namespace TwinLand.Components.Instrument
             DA.GetData("Land Brush", ref lb);
             
             // Collect specific instruments
-            if(pe.PlanarPointEmitter!= null)
+            if(pe.PlanarEmitter!= null)
             {
-                instrument.PlanarPointEmitter = pe.PlanarPointEmitter;
+                instrument.PlanarEmitter = pe.PlanarEmitter;
             }
             if(lb.LandBrush!= null)
             {

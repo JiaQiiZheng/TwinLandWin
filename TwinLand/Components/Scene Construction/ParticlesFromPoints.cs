@@ -66,7 +66,7 @@ namespace TwinLand
             GH_Structure<GH_Boolean> selfCollisionTree = new GH_Structure<GH_Boolean>();
             GH_Structure<GH_Integer> groupIndexTree = new GH_Structure<GH_Integer>();
 
-            DA.GetDataTree("Points", out pointTree);
+            if (!DA.GetDataTree("Points", out pointTree)) return;
             DA.GetDataTree("Velocities", out velocityTree);
             DA.GetDataTree("Mass", out massTree);
             DA.GetDataTree("Self Collision", out selfCollisionTree);

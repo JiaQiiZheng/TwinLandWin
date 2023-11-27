@@ -63,14 +63,14 @@ namespace TwinLand.Components.Instrument
         {
             RhinoViewport vp = RhinoDoc.ActiveDoc.Views.ActiveView.ActiveViewport;
 
-            Point3d birthLocation = Point3d.Unset;
             double accelerate = 3.0;
+            Point3d latestBirthLocation = Point3d.Unset;
             List<Mesh> bodies = new List<Mesh>();
             List<GeometryBase> earth = new List<GeometryBase>();
             bool cameraFollow = true;
             bool reset = false;
 
-            DA.GetData("Birth Point", ref birthLocation);
+            DA.GetData("Birth Point", ref latestBirthLocation);
             if (!DA.GetData("Charactor", ref charactor)) return;
             DA.GetData("Instrument", ref instrument);
             if (!DA.GetDataList("Earth", earth)) return;
@@ -79,6 +79,12 @@ namespace TwinLand.Components.Instrument
             DA.GetData("Viewport Update", ref viewportUpdate);
             DA.GetData("Active", ref active);
             DA.GetData("Reset", ref reset);
+
+            if (latestBirthLocation != birthLocation)
+            {
+                birthLocation = latestBirthLocation;
+                bodyLocation = birthLocation;
+            }
 
             // Initial charactor's properties
             if (bodies.Count == 0)
@@ -122,6 +128,7 @@ namespace TwinLand.Components.Instrument
 
             // Project onto the earth
             Point3d[] curProjectedLocation = new Point3d[1] { bodyLocation };
+
             if (earth.Count > 0)
             {
                 List<Point3d> projectedCollection = new List<Point3d>();
@@ -197,15 +204,15 @@ namespace TwinLand.Components.Instrument
 
             // Update output InstrumentObject
 
-            if (instrument.PlanarPointEmitter.Active)
+            if (instrument.PlanarEmitter.Active)
             {
                 Point3d emitPt = bodyLocation + new Vector3d(0, 0, bodyHeight);
-                instrument.PlanarPointEmitter.Plane = new Plane(emitPt, front);
+                instrument.PlanarEmitter.Plane = new Plane(emitPt, front);
             }
-            else if (!instrument.PlanarPointEmitter.Active)
+            else if (!instrument.PlanarEmitter.Active)
             {
                 // Delete current emit boundary
-                instrument.PlanarPointEmitter.EmittingBoundary = new Rectangle3d();
+                instrument.PlanarEmitter.EmittingBoundary = new Rectangle3d();
             }
 
             showStep += 1;
@@ -243,6 +250,7 @@ namespace TwinLand.Components.Instrument
         // Charactor properties
         CharactorObject charactor = null;
         InstrumentObject instrument = null;
+        static Point3d birthLocation = Point3d.Unset;
         string name = "Olmsted";
         double movingSpeed = 100;
         double turningSpeed = 1;
@@ -271,7 +279,7 @@ namespace TwinLand.Components.Instrument
         Keys c = Keys.C;
         string shift = Keys.Shift.ToString();
 
-        Point3d bodyLocation;
+        Point3d bodyLocation = birthLocation;
         double bodyDirection;
         double cameraHeight = 6000;
         double cameraDistance = 18000;
@@ -295,14 +303,14 @@ namespace TwinLand.Components.Instrument
                 turningSpeed = _turning;
                 if (instrumentToggle)
                 {
-                    UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+                    UpdateInstrument(instrument.PlanarEmitter.Plane);
                 }
             }
             else if (!keyStr.Contains(shift) && !emitting)
             {
                 // Not emit any point when no shift pressed
-                instrument.PlanarPointEmitter.Points.Clear();
-                instrument.PlanarPointEmitter.Velocities.Clear();
+                instrument.PlanarEmitter.Points.Clear();
+                instrument.PlanarEmitter.Velocities.Clear();
             }
 
             // Moving
@@ -369,34 +377,35 @@ namespace TwinLand.Components.Instrument
             else if (eventArgs.KeyCode == Keys.L)
             {
                 instrumentToggle = !instrumentToggle;
-                instrument.PlanarPointEmitter.Active = instrumentToggle;
+                instrument.PlanarEmitter.Active = instrumentToggle;
             }
-            // Adjust instrument
+
+            // Adjust Planar Emitter
             else if (eventArgs.KeyCode == Keys.U && instrumentToggle)
             {
-                instrument.PlanarPointEmitter.Height += movingSpeed;
-                UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+                instrument.PlanarEmitter.Height += movingSpeed;
+                UpdateInstrument(instrument.PlanarEmitter.Plane);
             }
             else if (eventArgs.KeyCode == Keys.J && instrumentToggle)
             {
-                if (instrument.PlanarPointEmitter.Height > 100)
+                if (instrument.PlanarEmitter.Height > 100)
                 {
-                    instrument.PlanarPointEmitter.Height -= movingSpeed;
+                    instrument.PlanarEmitter.Height -= movingSpeed;
                 }
-                UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+                UpdateInstrument(instrument.PlanarEmitter.Plane);
             }
             else if (eventArgs.KeyCode == Keys.H && instrumentToggle)
             {
-                if (instrument.PlanarPointEmitter.Width > 100)
+                if (instrument.PlanarEmitter.Width > 100)
                 {
-                    instrument.PlanarPointEmitter.Width -= movingSpeed;
+                    instrument.PlanarEmitter.Width -= movingSpeed;
                 }
-                UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+                UpdateInstrument(instrument.PlanarEmitter.Plane);
             }
             else if (eventArgs.KeyCode == Keys.K && instrumentToggle)
             {
-                instrument.PlanarPointEmitter.Width += movingSpeed;
-                UpdateInstrument(instrument.PlanarPointEmitter.Plane);
+                instrument.PlanarEmitter.Width += movingSpeed;
+                UpdateInstrument(instrument.PlanarEmitter.Plane);
             }
 
             // Instrument Schedule
@@ -441,10 +450,9 @@ namespace TwinLand.Components.Instrument
         }
 
 
-
         public void UpdateInstrument(Plane plane)
         {
-            instrument.PlanarPointEmitter.Trigger(plane);
+            instrument.PlanarEmitter.Trigger(plane);
         }
 
         public void Schedule(int interval, bool emitting)
@@ -470,7 +478,7 @@ namespace TwinLand.Components.Instrument
 
         private void OnTimerElapsed(Object sender, ElapsedEventArgs e)
         {
-            this.instrument.PlanarPointEmitter.Trigger(instrument.PlanarPointEmitter.EmittingBoundary.Plane);
+            this.instrument.PlanarEmitter.Trigger(instrument.PlanarEmitter.EmittingBoundary.Plane);
             Grasshopper.Instances.ActiveCanvas.Invoke(new Action(() => { ExpireSolution(true); }));
         }
 

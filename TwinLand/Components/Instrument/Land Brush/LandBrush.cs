@@ -82,7 +82,11 @@ namespace TwinLand.Components.Instrument.Land_Brush
                 diameter = MaterialWrapper.SolidParticle.Diameter;
                 sparsity = MaterialWrapper.SolidParticle.Sparsity;
             }
-
+            else if(MaterialWrapper.FluidParticle != null)
+            {
+                diameter = MaterialWrapper.FluidParticle.Diameter;
+                sparsity = MaterialWrapper.FluidParticle.Sparsity;
+            }
 
             int uCount = Math.Min(uvMaxCount, (int)(this.Radius * 2 / (diameter * sparsity)));
             int vCount = Math.Min(uvMaxCount, (int)(this.Radius * 2 / (diameter * sparsity)));

@@ -32,6 +32,7 @@ namespace TwinLand.Components.Instrument.Land_Brush
         {
             pManager.AddCurveParameter("Zone", "zone", "", GH_ParamAccess.item);
             pManager.AddPointParameter("Stroke", "stroke", "", GH_ParamAccess.list);
+            pManager.AddGenericParameter("Material", "material", "", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -48,6 +49,7 @@ namespace TwinLand.Components.Instrument.Land_Brush
 
             DA.SetData("Zone", lb.Zone);
             DA.SetDataList("Stroke", lb.Stroke);
+            DA.SetData("Material", lb.MaterialWrapper);
         }
 
         /// <summary>
