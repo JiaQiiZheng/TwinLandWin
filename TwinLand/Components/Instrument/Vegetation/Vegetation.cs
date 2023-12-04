@@ -54,6 +54,7 @@ namespace TwinLand.Components.Instrument.Vegetation
         {
             pManager.AddMeshParameter("Volumn Mesh", "volumn mesh", "", GH_ParamAccess.tree);
             pManager.AddCurveParameter("Area", "area", "", GH_ParamAccess.tree);
+            pManager.AddPointParameter("Anchor", "anchor", "", GH_ParamAccess.tree);
         }
 
         /// <summary>
@@ -95,6 +96,7 @@ namespace TwinLand.Components.Instrument.Vegetation
 
             GH_Structure<GH_Mesh> volumns = new GH_Structure<GH_Mesh>();
             GH_Structure<GH_Curve> areas = new GH_Structure<GH_Curve>();
+            GH_Structure<GH_Point> anchors = new GH_Structure<GH_Point>();
 
             for (int i = 0; i < settingOutCrvs.Branches.Count; i++)
             {
@@ -137,6 +139,7 @@ namespace TwinLand.Components.Instrument.Vegetation
                             // Output
                             volumns.Append(new GH_Mesh(merged), path);
                             areas.Append(new GH_Curve(profile), path);
+                            anchors.Append(new GH_Point(center), path);
                         }
                     }
 
@@ -172,6 +175,7 @@ namespace TwinLand.Components.Instrument.Vegetation
 
             DA.SetDataTree(0, volumns);
             DA.SetDataTree(1, areas);
+            DA.SetDataTree(2, anchors);
         }
 
         /// <summary>

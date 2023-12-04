@@ -23,8 +23,9 @@ namespace TwinLand.Components.Instrument.Materials.Solid_Particle
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddNumberParameter("Diameter", "diameter", "", GH_ParamAccess.item, 10.0);
-            pManager.AddNumberParameter("Sparsity", "sparsity", "", GH_ParamAccess.item, 10.0);
             pManager.AddNumberParameter("Mass", "mass", "", GH_ParamAccess.item, 1.0);
+            pManager.AddBooleanParameter("Self Collision", "self collision", "", GH_ParamAccess.item, true);
+            pManager.AddIntegerParameter("Group Index", "group index", "", GH_ParamAccess.item, 0);
         }
 
         /// <summary>
@@ -42,14 +43,16 @@ namespace TwinLand.Components.Instrument.Materials.Solid_Particle
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             double diameter = 10.0;
-            double sparsity = 10.0;
             double mass = 1.0;
+            bool selfCollision = true;
+            int groupIndex = 0;
 
             DA.GetData("Diameter", ref diameter);
-            DA.GetData("Sparsity", ref sparsity);
             DA.GetData("Mass", ref mass);
+            DA.GetData("Self Collision", ref selfCollision);
+            DA.GetData("Group Index", ref groupIndex);
 
-            SolidParticle sp = new SolidParticle(diameter, sparsity, mass);
+            SolidParticle sp = new SolidParticle(diameter, mass, selfCollision, groupIndex);
             MaterialObject materialWrapper = new MaterialObject(sp);
             DA.SetData("Solid Particle", materialWrapper);
         }

@@ -12,8 +12,9 @@ namespace TwinLand.Components.Instrument.Materials
     {
         // Properties
         public double Diameter { set; get; }
-        public double Sparsity { set; get; }
         public double Mass { set; get; }
+        public bool SelfCollision { set; get; }
+        public int GroupIndex { set; get; }
         public Point3d Location { set; get; }
         public Vector3d Velocity { set; get; }
 
@@ -21,20 +22,19 @@ namespace TwinLand.Components.Instrument.Materials
         public SolidParticle()
         {
             Diameter = 10.0;
-            Sparsity = 10.0;
             Mass = 1.0;
+            SelfCollision = true;
+            GroupIndex = 0;
             Location = Point3d.Origin;
             Velocity = Vector3d.Zero;
         }
 
-        public SolidParticle(double diameter, double sparsity, double mass)
+        public SolidParticle(double diameter, double mass, bool selfCollision, int groupIndex)
         {
-            // Make sure particles do not get overlap
-            sparsity = Math.Max(1.0, sparsity);
-
             Diameter = diameter;
-            Sparsity= sparsity;
             Mass = mass;
+            SelfCollision = selfCollision;
+            GroupIndex = groupIndex;
             Location = Point3d.Origin;
             Velocity = Vector3d.Zero;
         }

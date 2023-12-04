@@ -37,7 +37,7 @@ namespace TwinLand.Components.Scene_Construction
             pManager.AddIntegerParameter("Group Index", "group index", "Index to identify a specific group later, if empty, then follow the tree branch index",
               GH_ParamAccess.tree);
 
-            for (int i = 1; i<pManager.ParamCount; i++)
+            for (int i = 1; i < pManager.ParamCount; i++)
             {
                 pManager[i].Optional = true;
             }
@@ -63,7 +63,7 @@ namespace TwinLand.Components.Scene_Construction
             GH_Structure<GH_Boolean> selfCollisionTree = new GH_Structure<GH_Boolean>();
             GH_Structure<GH_Integer> groupIndexTree = new GH_Structure<GH_Integer>();
 
-            DA.GetDataTree("Points", out pointTree);
+            if (!DA.GetDataTree("Points", out pointTree)) return;
             DA.GetDataTree("Velocities", out velocityTree);
             DA.GetDataTree("Mass", out massTree);
             DA.GetDataTree("Self Collision", out selfCollisionTree);

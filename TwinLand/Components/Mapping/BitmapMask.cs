@@ -53,7 +53,7 @@ namespace TwinLand.Components.Mapping
             string fileName = String.Empty;
             int resolution = 1024;
 
-            if (!DA.GetData("Boundary", ref boundary)) return;
+            if (!DA.GetData("Boundary", ref boundary)) return;  
             if (!DA.GetDataList("Mask Area", maskAreas)) return;
             DA.GetData("Color", ref color);
             if (!DA.GetData("Target Folder", ref targetFolder)) return;

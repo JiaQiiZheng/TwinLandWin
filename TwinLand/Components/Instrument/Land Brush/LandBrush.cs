@@ -21,6 +21,7 @@ namespace TwinLand.Components.Instrument.Land_Brush
         public double Tolerence { get; set; }
         public MaterialObject MaterialWrapper { get; set; }
         public List<Point3d> Stroke { get; set; }
+        public double Density {  get; set; }
         public bool Active { get; set; }
 
         // Static variables
@@ -28,7 +29,7 @@ namespace TwinLand.Components.Instrument.Land_Brush
 
 
         // Constructors
-        public LandBrush(double radius, Mesh topography, double tl, MaterialObject materialWrapper)
+        public LandBrush(double radius,double density, Mesh topography, double tl, MaterialObject materialWrapper)
         {
             Radius = radius;
             Topography = topography;
@@ -36,6 +37,7 @@ namespace TwinLand.Components.Instrument.Land_Brush
             Location = Point3d.Origin;
             MaterialWrapper = materialWrapper;
             Stroke = new List<Point3d>();
+            Density = Math.Max(1.0, density);
         }
 
 
@@ -75,21 +77,21 @@ namespace TwinLand.Components.Instrument.Land_Brush
 
             // Calculate appropriate uv count based on input configurations
             double diameter = 1.0;
-            double sparsity = 1.0;
+            double density = 1.0;
 
             if (MaterialWrapper.SolidParticle != null)
             {
                 diameter = MaterialWrapper.SolidParticle.Diameter;
-                sparsity = MaterialWrapper.SolidParticle.Sparsity;
+                density = this.Density;
             }
             else if(MaterialWrapper.FluidParticle != null)
             {
                 diameter = MaterialWrapper.FluidParticle.Diameter;
-                sparsity = MaterialWrapper.FluidParticle.Sparsity;
+                density = this.Density;
             }
 
-            int uCount = Math.Min(uvMaxCount, (int)(this.Radius * 2 / (diameter * sparsity)));
-            int vCount = Math.Min(uvMaxCount, (int)(this.Radius * 2 / (diameter * sparsity)));
+            int uCount = Math.Min(uvMaxCount, (int)(this.Radius * 2 / (diameter * density)));
+            int vCount = Math.Min(uvMaxCount, (int)(this.Radius * 2 / (diameter * density)));
 
             locations = DivideSurfaceIntoGrid(srf, bound, uCount, vCount, true, tl);
 

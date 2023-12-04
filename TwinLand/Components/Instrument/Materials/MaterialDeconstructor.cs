@@ -30,8 +30,8 @@ namespace TwinLand.Components.Instrument.Materials
         /// </summary>
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddBooleanParameter("Is Solid Particle", "is solid particle", "", GH_ParamAccess.item);
-            pManager.AddBooleanParameter("Is Fluid Particle", "is fluid particle", "", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Solid Particle", "solid particle", "", GH_ParamAccess.item);
+            pManager.AddGenericParameter("Fluid Particle", "fluid particle", "", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace TwinLand.Components.Instrument.Materials
             MaterialObject material = null;
             if (!DA.GetData("Material", ref material)) return;
 
-            DA.SetData("Is Solid Particle", material.SolidParticle != null);
-            DA.SetData("Is Fluid Particle", material.FluidParticle != null);
+            DA.SetData("Solid Particle", material.SolidParticle);
+            DA.SetData("Fluid Particle", material.FluidParticle);
         }
 
         /// <summary>

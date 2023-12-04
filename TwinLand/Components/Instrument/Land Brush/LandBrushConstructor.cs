@@ -25,6 +25,7 @@ namespace TwinLand.Components.Instrument.Land_Brush
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddNumberParameter("Radius", "radius", "", GH_ParamAccess.item);
+            pManager.AddNumberParameter("Density", "density", "", GH_ParamAccess.item);
             pManager.AddGenericParameter("Material", "material", "", GH_ParamAccess.item);
             pManager.AddMeshParameter("Topography", "topography", "", GH_ParamAccess.item);
         }
@@ -44,10 +45,11 @@ namespace TwinLand.Components.Instrument.Land_Brush
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             DA.GetData("Radius", ref radius);
+            DA.GetData("Density", ref density);
             DA.GetData("Material", ref materialWrapper);
             DA.GetData("Topography", ref topography);
 
-            LandBrush lb = new LandBrush(radius, topography, tl, materialWrapper);
+            LandBrush lb = new LandBrush(radius, density, topography, tl, materialWrapper);
             InstrumentObject instrumentWrapper = new InstrumentObject(lb);
 
             DA.SetData("Land Brush", instrumentWrapper);
@@ -58,6 +60,7 @@ namespace TwinLand.Components.Instrument.Land_Brush
         /// </summary>
         double tl = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance;
         double radius = 1000.0;
+        double density = 10.0;
         MaterialObject materialWrapper = null;
         Mesh topography = null;
 
