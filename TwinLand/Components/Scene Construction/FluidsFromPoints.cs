@@ -64,6 +64,11 @@ namespace TwinLand.Components.Scene_Construction
             GH_Structure<GH_Integer> groupIndexTree = new GH_Structure<GH_Integer>();
 
             if (!DA.GetDataTree("Points", out pointTree)) return;
+            if (pointTree.get_DataItem(0) == null)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Points could not be null");
+                return;
+            }
             DA.GetDataTree("Velocities", out velocityTree);
             DA.GetDataTree("Mass", out massTree);
             DA.GetDataTree("Self Collision", out selfCollisionTree);

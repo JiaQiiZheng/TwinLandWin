@@ -58,7 +58,9 @@ namespace TwinLand.Components.Instrument.Land_Brush
             Point3d projectedLocation = new Point3d(this.Location);
             projectedLocation.Z = 0;
             Circle circle = new Circle(new Plane(projectedLocation, Vector3d.ZAxis), this.Radius);
-            Curve zone = Curve.ProjectToMesh(circle.ToNurbsCurve(), this.Topography, Vector3d.ZAxis, this.Tolerence)[0];
+            Curve[] crvs = Curve.ProjectToMesh(circle.ToNurbsCurve(), this.Topography, Vector3d.ZAxis, this.Tolerence);
+            if (crvs.Length == 0) return;
+            Curve zone = crvs[0];
 
             // Lift up to avoid overlap with mesh
             zone.Translate(new Vector3d(0, 0, 100));

@@ -67,6 +67,11 @@ namespace TwinLand
             GH_Structure<GH_Integer> groupIndexTree = new GH_Structure<GH_Integer>();
 
             if (!DA.GetDataTree("Points", out pointTree)) return;
+            if (pointTree.get_DataItem(0) == null)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Points could not be null");
+                return;
+            }
             DA.GetDataTree("Velocities", out velocityTree);
             DA.GetDataTree("Mass", out massTree);
             DA.GetDataTree("Self Collision", out selfCollisionTree);
@@ -96,7 +101,7 @@ namespace TwinLand
 
             if (pointTree.Branches.Count == 1)
             {
-                GH_Structure<GH_Point> pT = new GH_Structure<GH_Point> ();
+                GH_Structure<GH_Point> pT = new GH_Structure<GH_Point>();
                 pT.AppendRange(pointTree.Branches[0], new GH_Path(0));
                 pointTree = pT;
             }
